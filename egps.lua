@@ -253,7 +253,7 @@ function setFile(name, data)
   else
     print("creating "..name.." file...")
     fs.makeDir("/egpsData")
-    return setFile(name)
+    return setFile(name, data)
   end
   print("a black hole happened")
   return false
