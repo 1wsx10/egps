@@ -601,22 +601,32 @@ end
 function detectAll()
   local F, U, D = deltas[cachedDir], deltas[Up], deltas[Down]
   local block
+
+  local day_time = {}
+  day_time.day = os.day()
+  day_time.time = os.time()
+
   cachedWorld[cachedX..":"..cachedY..":"..cachedZ] = 0
+  cachedWorldDetail[cachedX..":"..cachedY..":"..cachedZ].block = {false}
+  cachedWorldDetail[cachedX..":"..cachedY..":"..cachedZ].time = {day_time}
 
   block = 0
   if turtle.detect()      then block = 1 end
   cachedWorld[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])] = block
-  cachedWorldDetail[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])] = {turtle.inspect()}
+  cachedWorldDetail[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])].block = {turtle.inspect()}
+  cachedWorldDetail[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])].time = {day_time}
 
   block = 0
   if turtle.detectUp()    then block = 1 end
   cachedWorld[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])] = block
-  cachedWorldDetail[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])] = {turtle.inspectUp()}
+  cachedWorldDetail[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])].block = {turtle.inspectUp()}
+  cachedWorldDetail[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])].time = {day_time}
 
   block = 0
   if turtle.detectDown()  then block = 1 end
   cachedWorld[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])] = block
-  cachedWorldDetail[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])] = {turtle.inspectDown()}
+  cachedWorldDetail[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])].block = {turtle.inspectDown()}
+  cachedWorldDetail[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])].time = {day_time}
 end
 
 -- Legacy detectAll --------------only writes 0... fucking weird
@@ -653,6 +663,28 @@ function forward()
 end
 
 ----------------------------------------
+-- ghost_forward
+--
+-- function: Pretend to move the turtle forward if possible and put the result in cache, do not actually move the turtle
+-- return: boolean "success"
+--
+
+function ghost_forward()
+  local D = deltas[cachedDir]--if north, D = {0, 0, -1}
+  local x, y, z = cachedX + D[1], cachedY + D[2], cachedZ + D[3]--adds corisponding delta to direction
+  local idx_pos = x..":"..y..":"..z
+
+  if true then
+    cachedX, cachedY, cachedZ = x, y, z
+    detectAll()
+    return true
+  else
+    cachedWorld[idx_pos] = (turtle.detect() and 1 or 0.5)
+    return false
+  end
+end
+
+----------------------------------------
 -- back
 --
 -- function: Move the turtle backward if possible and put the result in cache
@@ -665,6 +697,28 @@ function back()
   local idx_pos = x..":"..y..":"..z
 
   if turtle.back() then
+    cachedX, cachedY, cachedZ = x, y, z
+    detectAll()
+    return true
+  else
+    cachedWorld[idx_pos] = 0.5
+    return false
+  end
+end
+
+----------------------------------------
+-- ghost_back
+--
+-- function: Pretend to move the turtle backward if possible and put the result in cache, do not actually move the turtle
+-- return: boolean "success"
+--
+
+function ghost_back()
+  local D = deltas[cachedDir]
+  local x, y, z = cachedX - D[1], cachedY - D[2], cachedZ - D[3]
+  local idx_pos = x..":"..y..":"..z
+
+  if true then
     cachedX, cachedY, cachedZ = x, y, z
     detectAll()
     return true
@@ -1168,7 +1222,9 @@ function setLocationFromGPS()
     for tries = 0, 3 do  -- try to move in one direction
           if turtle.forward() then
             local newX, _, newZ = gps.locate(4, false) -- get the new position
-            turtle.back()              -- and go back
+            if not turtle.back() then-- and go back
+            	ghost_forward()--couldn't move backward... need to shuffle the map so we don't screw it up
+            end
 
             -- deduce the curent direction
             if newZ < cachedZ then
@@ -1199,7 +1255,7 @@ function setLocationFromGPS()
 
     if cachedDir == nil then
       if isLama then--TODO: put lama direction
-      	local x y z d = lama.getPosition()
+      	local x, y, z, d = lama.getPosition()
       	setDirection_lamaFormat(d)
 	  	print("got direction from lama")
       else
