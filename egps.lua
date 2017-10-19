@@ -69,6 +69,8 @@ waypoints = {}
 -- exclusion locations (will not pathfind through area)
 exclusions = {}
 
+dataDir = "/.egpsData"
+
 -- A* parameters
 local stopAt, nilCost = 1500, 1000
 
@@ -225,8 +227,8 @@ end
 --
 
 function getFile(name)
-  if fs.exists("/egpsData/"..name) then
-    local file = fs.open("/egpsData/"..name,"r")
+  if fs.exists(dataDir.."/"..name) then
+    local file = fs.open(dataDir.."/"..name,"r")
     local data = file.readAll()
     file.close()
     return data
@@ -245,14 +247,14 @@ end
 --
 
 function setFile(name, data)
-  if fs.isDir("/egpsData") then
-    local file = fs.open("/egpsData/"..name,"w")
+  if fs.isDir(dataDir.."") then
+    local file = fs.open(dataDir.."/"..name,"w")
     file.write(textutils.serialize(data))
     file.close()
     return true
   else
     print("creating "..name.." file...")
-    fs.makeDir("/egpsData")
+    fs.makeDir(dataDir.."")
     return setFile(name, data)
   end
   print("a black hole happened")
@@ -1196,9 +1198,12 @@ function setLocationFromGPS()
     end
 
     if cachedDir == nil then
-      print("Could not determine direction")
       if isLama then--TODO: put lama direction
+      	local x y z d = lama.getPosition()
+      	setDirection_lamaFormat(d)
+	  	print("got direction from lama")
       else
+      	print("Could not determine direction")
         return false
       end
     end
@@ -1212,7 +1217,7 @@ function setLocationFromGPS()
   else
     print("no GPS signal")
     if isLama then
-
+		setLocationFromLAMA()
     else
       return false
     end
@@ -1220,16 +1225,13 @@ function setLocationFromGPS()
 end
 
 ----------------------------------------
--- setLocationFromLAMA
+-- setDirection_lamaFormat
 --
--- function: Retrieve the turtle position and direction from LAMA
--- return: current X, Y, Z and direction of the turtle (or false if it failed)
+-- function: Set the turtle direction from the LAMA format
+-- return: boolean success
 --
-
-function setLocationFromLAMA()
-  if isLama then
-    cachedX, cachedY, cachedZ, d = lama.getPosition() --last resort if gps fails, get direction from Lama
-    if d == "north" then
+function setDirection_lamaFormat(d)
+	if d == "north" then
       cachedDir = North
     elseif d == "south" then
       cachedDir = South
@@ -1242,6 +1244,19 @@ function setLocationFromLAMA()
       return false
     end
     return true
+end
+
+----------------------------------------
+-- setLocationFromLAMA
+--
+-- function: Retrieve the turtle position and direction from LAMA
+-- return: current X, Y, Z and direction of the turtle (or false if it failed)
+--
+
+function setLocationFromLAMA()
+  if isLama then
+    cachedX, cachedY, cachedZ, d = lama.getPosition() --last resort if gps fails, get direction from Lama
+    return setDirection_lamaFormat(d)
   else
     print("no lama")
     return false
