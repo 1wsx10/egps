@@ -1199,7 +1199,7 @@ function setLocationFromGPS()
 
     if cachedDir == nil then
       if isLama then--TODO: put lama direction
-      	local x y z d = lama.getPosition()
+      	local x, y, z, d = lama.getPosition()
       	setDirection_lamaFormat(d)
 	  	print("got direction from lama")
       else
