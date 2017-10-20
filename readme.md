@@ -2,6 +2,6 @@
 
 
 #to install:
-pastebin run 0NKGQVnt
+pastebin run 0jc6cbfHe
 
 #no offline installer yet
