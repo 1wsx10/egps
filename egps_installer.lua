@@ -1,7 +1,7 @@
 url = "https://raw.githubusercontent.com/1wsx10/egps/master/egps.lua"
 overwrite = true
 data_directory = "/.egpsData/"
-program_name = "egps.lua"
+program_name = "egps"
 
 function main()
 	if not http then
