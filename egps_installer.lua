@@ -19,10 +19,12 @@ function main()
 		local startup_file = fs.open("/startup", fs.exists("/startup") and "a" or "w")
 
 		startup_file.writeLine("--load egps")
-		startup_file.writeLine("os.loadAPI(\"".. data_directory .. program_name .."\")")
-		startup_file.writeLine("--uncomment these to start with them:")
-		startup_file.writeLine("--GPS:")
-		startup_file.writeLine("--egps.setLocationFromGPS()")
+		startup_file.writeLine("if os.loadAPI(\"".. data_directory .. program_name .."\") then")
+		startup_file.writeLine("	egps.loadAll()")
+		startup_file.writeLine("	--uncomment these to start with them:")
+		startup_file.writeLine("	--GPS:")
+		startup_file.writeLine("	--egps.setLocationFromGPS()")
+		startup_file.writeLine("end")
 
 		startup_file.close()
 	end
