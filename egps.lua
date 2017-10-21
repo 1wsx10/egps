@@ -282,6 +282,33 @@ function getFile(name)
 	end
 end
 
+
+
+----------------------------------------
+-- mergeWithFile
+--
+-- function: merge cachedWorldDetail with file
+-- input: the file name to merge with
+-- return: the merged table
+-- return nil on bad file
+--
+function mergeWithFile(name)
+	if fs.exists(name) then
+		local file = fs.open(name,"r")
+		local string = file.readAll()
+		file.close()
+		local data = textutils.unserialize(string)
+		if data then
+			return mergeTables(cachedWorldDetail, data)
+		else
+			return nil
+		end
+	else
+		print("file not found: "..name)
+		return nil
+	end
+end
+
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ----
 ---- textutils.serialize from the built-in APIs.. i just fixed a bug mentioned here: http://www.computercraft.info/forums2/index.php?/topic/11453-a-small-bug-with-textutilsserialize/
