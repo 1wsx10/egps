@@ -102,9 +102,9 @@ function mergeTables(tableA, tableB)
 			--newtable doesn't have a value, insert the value
 			newtable[k] = v
 		else
-			if newtable[k].time.day > v.day then
+			if newtable[k].time.day > v.time.day then
 				--newtable is later, do nothing
-			elseif newtable[k].time.day < v.day then
+			elseif newtable[k].time.day < v.time.day then
 				--tableA is later, replace the value
 				newtable[k] = v
 			else
@@ -426,6 +426,16 @@ function load()
   end
 end
 
+function loadFile(name)
+  local data = getFile(name)
+  if data ~= "" then
+    return textutils.unserialize(data)
+  else
+    print("no data or file doesn't exist")
+    return false
+  end
+end
+
 ----------------------------------------
 -- save
 --
@@ -470,8 +480,9 @@ end
 -- return: boolean "success"
 --
 
-function saveDetail()
-  setFile("blockDataDetail", cachedWorldDetail)
+function saveDetail(name)
+	name = name or "blockDataDetail"
+  setFile(name, cachedWorldDetail)
 end
 
 ----------------------------------------
