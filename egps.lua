@@ -82,6 +82,25 @@ if fs.isDir("/.lama") then
 	print("lama detected, using lama movement...")
 end
 
+
+----------------------------------------
+-- formatCoord
+--
+-- function: formats the coordinate to be used as a key for the tables
+-- return: the coordinate string
+-- return: nil if the coordinates are bad
+--
+-- format:
+-- 		table["x:y:z"].time.day = integer
+-- 		table["x:y:z"].time.time = float
+--
+function fmtCoord(x, y, z)
+	if not x then return nil end
+	if not y then return nil end
+	if not z then return nil end
+	return string.format("%d:%d:%d", x, y, z)
+end
+
 ----------------------------------------
 -- mergeTables
 --
