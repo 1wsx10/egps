@@ -83,6 +83,45 @@ if fs.isDir("/.lama") then
 end
 
 ----------------------------------------
+-- mergeTables
+--
+-- function: merges 2 tables based on the "time" value
+-- return: the merged table, if there are conflicting blocks, the latest one is chosen
+-- return: nil if the tables are the wrong format
+--
+-- format:
+-- 		table["x:y:z"].time.day = integer
+-- 		table["x:y:z"].time.time = float
+--
+function mergeTables(tableA, tableB)
+	local newtable = tableB
+	for k, v in pairs(tableA) do
+		--wrong format
+		if not v.time then return nil end
+		if not newtable[k] then
+			--newtable doesn't have a value, insert the value
+			newtable[k] = v
+		else
+			if newtable[k].time.day > v.time.day then
+				--newtable is later, do nothing
+			elseif newtable[k].time.day < v.time.day then
+				--tableA is later, replace the value
+				newtable[k] = v
+			else
+				--the day is the same, check time
+				if newtable[k].time.time > v.time.time then
+					--newtable is later, do nothing
+				else
+					--tableA is later, replace the value
+					newtable[k] = v
+				end
+			end
+		end
+	end
+	return newtable
+end
+
+----------------------------------------
 -- getBlock
 --
 -- function: tests to see if there is a block or space.
@@ -92,15 +131,20 @@ end
 
 function getBlock(bX, bY, bZ)
   local idx_block = bX..":"..bY..":"..bZ
-  if cachedWorld[idx_block] == nil then
-    return nil
-  elseif cachedWorld[idx_block] == 1 then
-    return true, cachedWorldDetail[idx_block]
-  elseif cachedWorld[idx_block] == 0 then
-    return false
-  else
-    return nil
-  end
+  return cachedWorld[idx_block]
+end
+
+----------------------------------------
+-- getBlockDetail
+--
+-- function: tests to see if there is a block or space.
+-- return: cachedWorldDetail on the block {turtle.inspect(), {os.time, os.day}}
+-- return: nil if there is no information on the block
+--
+
+function getBlockDetail(bX, bY, bZ)
+  local idx_block = bX..":"..bY..":"..bZ
+  return cachedWorldDetail[idx_block]
 end
 
 ----------------------------------------
@@ -238,6 +282,89 @@ function getFile(name)
   end
 end
 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+----
+---- textutils.serialize from the built-in APIs.. i just fixed a bug mentioned here: http://www.computercraft.info/forums2/index.php?/topic/11453-a-small-bug-with-textutilsserialize/
+----
+
+local g_tLuaKeywords = {
+    [ "and" ] = true,
+    [ "break" ] = true,
+    [ "do" ] = true,
+    [ "else" ] = true,
+    [ "elseif" ] = true,
+    [ "end" ] = true,
+    [ "false" ] = true,
+    [ "for" ] = true,
+    [ "function" ] = true,
+    [ "if" ] = true,
+    [ "in" ] = true,
+    [ "local" ] = true,
+    [ "nil" ] = true,
+    [ "not" ] = true,
+    [ "or" ] = true,
+    [ "repeat" ] = true,
+    [ "return" ] = true,
+    [ "then" ] = true,
+    [ "true" ] = true,
+    [ "until" ] = true,
+    [ "while" ] = true,
+}
+
+local function serializeImpl( t, tTracking, sIndent )
+    local sType = type(t)
+    if sType == "table" then
+        if tTracking[t] ~= nil then
+            error( "Cannot serialize table with recursive entries", 0 )
+        end
+        tTracking[t] = true
+
+        if next(t) == nil then
+            -- Empty tables are simple
+            return "{}"
+        else
+            -- Other tables take more work
+            local sResult = "{\n"
+            local sSubIndent = sIndent .. "  "
+            local tSeen = {}
+            for k,v in ipairs(t) do
+                tSeen[k] = true
+                sResult = sResult .. sSubIndent .. serializeImpl( v, tTracking, sSubIndent ) .. ",\n"
+            end
+            for k,v in pairs(t) do
+                if not tSeen[k] then
+                    local sEntry
+                    if type(k) == "string" and not g_tLuaKeywords[k] and string.match( k, "^[%a_][%a%d_]*$" ) then
+                        sEntry = k .. " = " .. serializeImpl( v, tTracking, sSubIndent ) .. ",\n"
+                    else
+                        sEntry = "[ " .. serializeImpl( k, tTracking, sSubIndent ) .. " ] = " .. serializeImpl( v, tTracking, sSubIndent ) .. ",\n"
+                    end
+                    sResult = sResult .. sSubIndent .. sEntry
+                end
+            end
+            sResult = sResult .. sIndent .. "}"
+            tTracking[t] = nil
+            return sResult
+        end
+
+    elseif sType == "string" then
+        return string.format( "%q", t )
+
+    elseif sType == "number" or sType == "boolean" or sType == "nil" then
+        return tostring(t)
+
+    else
+        error( "Cannot serialize type "..sType, 0 )
+
+    end
+end
+
+function serialize( t )
+    local tTracking = {}
+    return serializeImpl( t, tTracking, "" )
+end
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 ----------------------------------------
 --
 --
@@ -249,7 +376,7 @@ end
 function setFile(name, data)
   if fs.isDir(dataDir.."") then
     local file = fs.open(dataDir.."/"..name,"w")
-    file.write(textutils.serialize(data))
+    file.write(serialize(data))
     file.close()
     return true
   else
@@ -299,6 +426,16 @@ function load()
   end
 end
 
+function loadFile(name)
+  local data = getFile(name)
+  if data ~= "" then
+    return textutils.unserialize(data)
+  else
+    print("no data or file doesn't exist")
+    return false
+  end
+end
+
 ----------------------------------------
 -- save
 --
@@ -343,8 +480,9 @@ end
 -- return: boolean "success"
 --
 
-function saveDetail()
-  setFile("blockDataDetail", cachedWorldDetail)
+function saveDetail(name)
+	name = name or "blockDataDetail"
+  setFile(name, cachedWorldDetail)
 end
 
 ----------------------------------------
@@ -592,7 +730,7 @@ function empty(table)
   return true
 end
 
-----------------------------------------TODO: worldDetail support
+----------------------------------------
 -- detectAll
 --
 -- function: Detect up, forward, down and writes it to cachedWorld
@@ -601,22 +739,36 @@ end
 function detectAll()
   local F, U, D = deltas[cachedDir], deltas[Up], deltas[Down]
   local block
+
+  local time = {}
+  time.day = os.day()
+  time.time = os.time()
+
   cachedWorld[cachedX..":"..cachedY..":"..cachedZ] = 0
+  if not cachedWorldDetail[cachedX..":"..cachedY..":"..cachedZ] then cachedWorldDetail[cachedX..":"..cachedY..":"..cachedZ] = {} end
+  cachedWorldDetail[cachedX..":"..cachedY..":"..cachedZ].block = {false, "no block to inspect"}
+  cachedWorldDetail[cachedX..":"..cachedY..":"..cachedZ].time = {time}
 
   block = 0
   if turtle.detect()      then block = 1 end
   cachedWorld[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])] = block
-  cachedWorldDetail[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])] = {turtle.inspect()}
+  if not cachedWorldDetail[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])] then cachedWorldDetail[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])] = {} end
+  cachedWorldDetail[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])].block = {turtle.inspect()}
+  cachedWorldDetail[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])].time = {time}
 
   block = 0
   if turtle.detectUp()    then block = 1 end
   cachedWorld[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])] = block
-  cachedWorldDetail[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])] = {turtle.inspectUp()}
+  if not cachedWorldDetail[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])] then cachedWorldDetail[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])] = {} end
+  cachedWorldDetail[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])].block = {turtle.inspectUp()}
+  cachedWorldDetail[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])].time = {time}
 
   block = 0
   if turtle.detectDown()  then block = 1 end
   cachedWorld[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])] = block
-  cachedWorldDetail[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])] = {turtle.inspectDown()}
+  if not cachedWorldDetail[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])] then cachedWorldDetail[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])] = {} end
+  cachedWorldDetail[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])].block = {turtle.inspectDown()}
+  cachedWorldDetail[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])].time = {time}
 end
 
 -- Legacy detectAll --------------only writes 0... fucking weird
@@ -638,11 +790,39 @@ end--]]
 --
 
 function forward()
+	if not cachedX then
+		return turtle.forward()
+	end
   local D = deltas[cachedDir]--if north, D = {0, 0, -1}
   local x, y, z = cachedX + D[1], cachedY + D[2], cachedZ + D[3]--adds corisponding delta to direction
   local idx_pos = x..":"..y..":"..z
 
   if turtle.forward() then
+    cachedX, cachedY, cachedZ = x, y, z
+    detectAll()
+    return true
+  else
+    cachedWorld[idx_pos] = (turtle.detect() and 1 or 0.5)
+    return false
+  end
+end
+
+----------------------------------------
+-- ghost_forward
+--
+-- function: Pretend to move the turtle forward if possible and put the result in cache, do not actually move the turtle
+-- return: boolean "success"
+--
+
+function ghost_forward()
+	if not cachedX then
+		return false
+	end
+  local D = deltas[cachedDir]--if north, D = {0, 0, -1}
+  local x, y, z = cachedX + D[1], cachedY + D[2], cachedZ + D[3]--adds corisponding delta to direction
+  local idx_pos = x..":"..y..":"..z
+
+  if true then
     cachedX, cachedY, cachedZ = x, y, z
     detectAll()
     return true
@@ -660,11 +840,39 @@ end
 --
 
 function back()
+	if not cachedX then
+		return turtle.back()
+	end
   local D = deltas[cachedDir]
   local x, y, z = cachedX - D[1], cachedY - D[2], cachedZ - D[3]
   local idx_pos = x..":"..y..":"..z
 
   if turtle.back() then
+    cachedX, cachedY, cachedZ = x, y, z
+    detectAll()
+    return true
+  else
+    cachedWorld[idx_pos] = 0.5
+    return false
+  end
+end
+
+----------------------------------------
+-- ghost_back
+--
+-- function: Pretend to move the turtle backward if possible and put the result in cache, do not actually move the turtle
+-- return: boolean "success"
+--
+
+function ghost_back()
+	if not cachedX then
+		return false
+	end
+  local D = deltas[cachedDir]
+  local x, y, z = cachedX - D[1], cachedY - D[2], cachedZ - D[3]
+  local idx_pos = x..":"..y..":"..z
+
+  if true then
     cachedX, cachedY, cachedZ = x, y, z
     detectAll()
     return true
@@ -682,6 +890,9 @@ end
 --
 
 function up()
+	if not cachedX then
+		return turtle.up()
+	end
   local D = deltas[Up]
   local x, y, z = cachedX + D[1], cachedY + D[2], cachedZ + D[3]
   local idx_pos = x..":"..y..":"..z
@@ -704,6 +915,9 @@ end
 --
 
 function down()
+	if not cachedX then
+		return turtle.down()
+	end
   local D = deltas[Down]
   local x, y, z = cachedX + D[1], cachedY + D[2], cachedZ + D[3]
   local idx_pos = x..":"..y..":"..z
@@ -727,6 +941,9 @@ end
 --
 
 function turnLeft()
+	if not cachedX then
+		return turtle.turnLeft()
+	end
   cachedDir = (cachedDir + 1) % 4
   turtle.turnLeft()
   detectAll()
@@ -741,6 +958,9 @@ end
 --
 
 function turnRight()
+	if not cachedX then
+		return turtle.turnRight()
+	end
   cachedDir = (cachedDir + 3) % 4
   turtle.turnRight()
   detectAll()
@@ -756,6 +976,9 @@ end
 --
 
 function turnTo(_targetDir)
+	if not cachedX then
+		return false
+	end
   --print(string.format("target dir: {0}\ncachedDir: {1}", _targetDir, cachedDir))
   if _targetDir == cachedDir then
     return true
@@ -1161,6 +1384,9 @@ function setLocationFromGPS()
   if startGPS() then
     -- get the current position
     cachedX, cachedY, cachedZ  = gps.locate(4, false)
+    if not cachedX then
+    	return false
+    end
     local d = cachedDir or nil
     cachedDir = nil
 
@@ -1168,7 +1394,9 @@ function setLocationFromGPS()
     for tries = 0, 3 do  -- try to move in one direction
           if turtle.forward() then
             local newX, _, newZ = gps.locate(4, false) -- get the new position
-            turtle.back()              -- and go back
+            if not turtle.back() then-- and go back
+            	ghost_forward()--couldn't move backward... need to shuffle the map so we don't screw it up
+            end
 
             -- deduce the curent direction
             if newZ < cachedZ then
@@ -1186,7 +1414,13 @@ function setLocationFromGPS()
             end
 
             -- Cancel out the tries
-            turnTo((cachedDir - tries + 4) % 4)
+            if tries%4 == 3 then
+            	turtle.turnLeft()
+            else
+            	for i = 1,tries do
+            		turtle.turnRight()
+            	end
+            end
 
             -- exit the loop
             break
@@ -1198,7 +1432,7 @@ function setLocationFromGPS()
     end
 
     if cachedDir == nil then
-      if isLama then--TODO: put lama direction
+      if isLama then--TODO: test this
       	local x, y, z, d = lama.getPosition()
       	setDirection_lamaFormat(d)
 	  	print("got direction from lama")
