@@ -83,6 +83,45 @@ if fs.isDir("/.lama") then
 end
 
 ----------------------------------------
+-- mergeTables
+--
+-- function: merges 2 tables based on the "time" value
+-- return: the merged table, if there are conflicting blocks, the latest one is chosen
+-- return: nil if the tables are the wrong format
+--
+-- format:
+-- 		table["x:y:z"].time.day = integer
+-- 		table["x:y:z"].time.time = float
+--
+function mergeTables(tableA, tableB)
+	local newtable = tableB
+	for k, v in pairs(tableA) do
+		--wrong format
+		if not v.time then return nil end
+		if not newtable[k] then
+			--newtable doesn't have a value, insert the value
+			newtable[k] = v
+		else
+			if newtable[k].time.day > v.day then
+				--newtable is later, do nothing
+			elseif newtable[k].time.day < v.day then
+				--tableA is later, replace the value
+				newtable[k] = v
+			else
+				--the day is the same, check time
+				if newtable[k].time.time > v.time.time then
+					--newtable is later, do nothing
+				else
+					--tableA is later, replace the value
+					newtable[k] = v
+				end
+			end
+		end
+	end
+	return newtable
+end
+
+----------------------------------------
 -- getBlock
 --
 -- function: tests to see if there is a block or space.
@@ -243,6 +282,89 @@ function getFile(name)
   end
 end
 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+----
+---- textutils.serialize from the built-in APIs.. i just fixed a bug mentioned here: http://www.computercraft.info/forums2/index.php?/topic/11453-a-small-bug-with-textutilsserialize/
+----
+
+local g_tLuaKeywords = {
+    [ "and" ] = true,
+    [ "break" ] = true,
+    [ "do" ] = true,
+    [ "else" ] = true,
+    [ "elseif" ] = true,
+    [ "end" ] = true,
+    [ "false" ] = true,
+    [ "for" ] = true,
+    [ "function" ] = true,
+    [ "if" ] = true,
+    [ "in" ] = true,
+    [ "local" ] = true,
+    [ "nil" ] = true,
+    [ "not" ] = true,
+    [ "or" ] = true,
+    [ "repeat" ] = true,
+    [ "return" ] = true,
+    [ "then" ] = true,
+    [ "true" ] = true,
+    [ "until" ] = true,
+    [ "while" ] = true,
+}
+
+local function serializeImpl( t, tTracking, sIndent )
+    local sType = type(t)
+    if sType == "table" then
+        if tTracking[t] ~= nil then
+            error( "Cannot serialize table with recursive entries", 0 )
+        end
+        tTracking[t] = true
+
+        if next(t) == nil then
+            -- Empty tables are simple
+            return "{}"
+        else
+            -- Other tables take more work
+            local sResult = "{\n"
+            local sSubIndent = sIndent .. "  "
+            local tSeen = {}
+            for k,v in ipairs(t) do
+                tSeen[k] = true
+                sResult = sResult .. sSubIndent .. serializeImpl( v, tTracking, sSubIndent ) .. ",\n"
+            end
+            for k,v in pairs(t) do
+                if not tSeen[k] then
+                    local sEntry
+                    if type(k) == "string" and not g_tLuaKeywords[k] and string.match( k, "^[%a_][%a%d_]*$" ) then
+                        sEntry = k .. " = " .. serializeImpl( v, tTracking, sSubIndent ) .. ",\n"
+                    else
+                        sEntry = "[ " .. serializeImpl( k, tTracking, sSubIndent ) .. " ] = " .. serializeImpl( v, tTracking, sSubIndent ) .. ",\n"
+                    end
+                    sResult = sResult .. sSubIndent .. sEntry
+                end
+            end
+            sResult = sResult .. sIndent .. "}"
+            tTracking[t] = nil
+            return sResult
+        end
+
+    elseif sType == "string" then
+        return string.format( "%q", t )
+
+    elseif sType == "number" or sType == "boolean" or sType == "nil" then
+        return tostring(t)
+
+    else
+        error( "Cannot serialize type "..sType, 0 )
+
+    end
+end
+
+function serialize( t )
+    local tTracking = {}
+    return serializeImpl( t, tTracking, "" )
+end
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 ----------------------------------------
 --
 --
@@ -254,7 +376,7 @@ end
 function setFile(name, data)
   if fs.isDir(dataDir.."") then
     local file = fs.open(dataDir.."/"..name,"w")
-    file.write(textutils.serialize(data))
+    file.write(serialize(data))
     file.close()
     return true
   else
@@ -607,35 +729,35 @@ function detectAll()
   local F, U, D = deltas[cachedDir], deltas[Up], deltas[Down]
   local block
 
-  local day_time = {}
-  day_time.day = os.day()
-  day_time.time = os.time()
+  local time = {}
+  time.day = os.day()
+  time.time = os.time()
 
   cachedWorld[cachedX..":"..cachedY..":"..cachedZ] = 0
   if not cachedWorldDetail[cachedX..":"..cachedY..":"..cachedZ] then cachedWorldDetail[cachedX..":"..cachedY..":"..cachedZ] = {} end
   cachedWorldDetail[cachedX..":"..cachedY..":"..cachedZ].block = {false, "no block to inspect"}
-  cachedWorldDetail[cachedX..":"..cachedY..":"..cachedZ].time = {day_time}
+  cachedWorldDetail[cachedX..":"..cachedY..":"..cachedZ].time = {time}
 
   block = 0
   if turtle.detect()      then block = 1 end
   cachedWorld[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])] = block
   if not cachedWorldDetail[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])] then cachedWorldDetail[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])] = {} end
   cachedWorldDetail[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])].block = {turtle.inspect()}
-  cachedWorldDetail[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])].time = {day_time}
+  cachedWorldDetail[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])].time = {time}
 
   block = 0
   if turtle.detectUp()    then block = 1 end
   cachedWorld[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])] = block
   if not cachedWorldDetail[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])] then cachedWorldDetail[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])] = {} end
   cachedWorldDetail[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])].block = {turtle.inspectUp()}
-  cachedWorldDetail[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])].time = {day_time}
+  cachedWorldDetail[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])].time = {time}
 
   block = 0
   if turtle.detectDown()  then block = 1 end
   cachedWorld[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])] = block
   if not cachedWorldDetail[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])] then cachedWorldDetail[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])] = {} end
   cachedWorldDetail[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])].block = {turtle.inspectDown()}
-  cachedWorldDetail[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])].time = {day_time}
+  cachedWorldDetail[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])].time = {time}
 end
 
 -- Legacy detectAll --------------only writes 0... fucking weird
