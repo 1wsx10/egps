@@ -92,15 +92,20 @@ end
 
 function getBlock(bX, bY, bZ)
   local idx_block = bX..":"..bY..":"..bZ
-  if cachedWorld[idx_block] == nil then
-    return nil
-  elseif cachedWorld[idx_block] == 1 then
-    return true, cachedWorldDetail[idx_block]
-  elseif cachedWorld[idx_block] == 0 then
-    return false
-  else
-    return nil
-  end
+  return cachedWorld[idx_block]
+end
+
+----------------------------------------
+-- getBlockDetail
+--
+-- function: tests to see if there is a block or space.
+-- return: cachedWorldDetail on the block {turtle.inspect(), {os.time, os.day}}
+-- return: nil if there is no information on the block
+--
+
+function getBlockDetail(bX, bY, bZ)
+  local idx_block = bX..":"..bY..":"..bZ
+  return cachedWorldDetail[idx_block]
 end
 
 ----------------------------------------
@@ -592,7 +597,7 @@ function empty(table)
   return true
 end
 
-----------------------------------------TODO: worldDetail support
+----------------------------------------
 -- detectAll
 --
 -- function: Detect up, forward, down and writes it to cachedWorld
@@ -607,24 +612,28 @@ function detectAll()
   day_time.time = os.time()
 
   cachedWorld[cachedX..":"..cachedY..":"..cachedZ] = 0
-  cachedWorldDetail[cachedX..":"..cachedY..":"..cachedZ].block = {false}
+  if not cachedWorldDetail[cachedX..":"..cachedY..":"..cachedZ] then cachedWorldDetail[cachedX..":"..cachedY..":"..cachedZ] = {} end
+  cachedWorldDetail[cachedX..":"..cachedY..":"..cachedZ].block = {false, "no block to inspect"}
   cachedWorldDetail[cachedX..":"..cachedY..":"..cachedZ].time = {day_time}
 
   block = 0
   if turtle.detect()      then block = 1 end
   cachedWorld[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])] = block
+  if not cachedWorldDetail[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])] then cachedWorldDetail[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])] = {} end
   cachedWorldDetail[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])].block = {turtle.inspect()}
   cachedWorldDetail[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])].time = {day_time}
 
   block = 0
   if turtle.detectUp()    then block = 1 end
   cachedWorld[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])] = block
+  if not cachedWorldDetail[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])] then cachedWorldDetail[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])] = {} end
   cachedWorldDetail[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])].block = {turtle.inspectUp()}
   cachedWorldDetail[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])].time = {day_time}
 
   block = 0
   if turtle.detectDown()  then block = 1 end
   cachedWorld[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])] = block
+  if not cachedWorldDetail[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])] then cachedWorldDetail[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])] = {} end
   cachedWorldDetail[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])].block = {turtle.inspectDown()}
   cachedWorldDetail[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])].time = {day_time}
 end
@@ -648,6 +657,9 @@ end--]]
 --
 
 function forward()
+	if not cachedX then
+		return turtle.forward()
+	end
   local D = deltas[cachedDir]--if north, D = {0, 0, -1}
   local x, y, z = cachedX + D[1], cachedY + D[2], cachedZ + D[3]--adds corisponding delta to direction
   local idx_pos = x..":"..y..":"..z
@@ -670,6 +682,9 @@ end
 --
 
 function ghost_forward()
+	if not cachedX then
+		return false
+	end
   local D = deltas[cachedDir]--if north, D = {0, 0, -1}
   local x, y, z = cachedX + D[1], cachedY + D[2], cachedZ + D[3]--adds corisponding delta to direction
   local idx_pos = x..":"..y..":"..z
@@ -692,6 +707,9 @@ end
 --
 
 function back()
+	if not cachedX then
+		return turtle.back()
+	end
   local D = deltas[cachedDir]
   local x, y, z = cachedX - D[1], cachedY - D[2], cachedZ - D[3]
   local idx_pos = x..":"..y..":"..z
@@ -714,6 +732,9 @@ end
 --
 
 function ghost_back()
+	if not cachedX then
+		return false
+	end
   local D = deltas[cachedDir]
   local x, y, z = cachedX - D[1], cachedY - D[2], cachedZ - D[3]
   local idx_pos = x..":"..y..":"..z
@@ -736,6 +757,9 @@ end
 --
 
 function up()
+	if not cachedX then
+		return turtle.up()
+	end
   local D = deltas[Up]
   local x, y, z = cachedX + D[1], cachedY + D[2], cachedZ + D[3]
   local idx_pos = x..":"..y..":"..z
@@ -758,6 +782,9 @@ end
 --
 
 function down()
+	if not cachedX then
+		return turtle.down()
+	end
   local D = deltas[Down]
   local x, y, z = cachedX + D[1], cachedY + D[2], cachedZ + D[3]
   local idx_pos = x..":"..y..":"..z
@@ -781,6 +808,9 @@ end
 --
 
 function turnLeft()
+	if not cachedX then
+		return turtle.turnLeft()
+	end
   cachedDir = (cachedDir + 1) % 4
   turtle.turnLeft()
   detectAll()
@@ -795,6 +825,9 @@ end
 --
 
 function turnRight()
+	if not cachedX then
+		return turtle.turnRight()
+	end
   cachedDir = (cachedDir + 3) % 4
   turtle.turnRight()
   detectAll()
@@ -810,6 +843,9 @@ end
 --
 
 function turnTo(_targetDir)
+	if not cachedX then
+		return false
+	end
   --print(string.format("target dir: {0}\ncachedDir: {1}", _targetDir, cachedDir))
   if _targetDir == cachedDir then
     return true
@@ -1215,6 +1251,9 @@ function setLocationFromGPS()
   if startGPS() then
     -- get the current position
     cachedX, cachedY, cachedZ  = gps.locate(4, false)
+    if not cachedX then
+    	return false
+    end
     local d = cachedDir or nil
     cachedDir = nil
 
@@ -1242,7 +1281,13 @@ function setLocationFromGPS()
             end
 
             -- Cancel out the tries
-            turnTo((cachedDir - tries + 4) % 4)
+            if tries%4 == 3 then
+            	turtle.turnLeft()
+            else
+            	for i = 1,tries do
+            		turtle.turnRight()
+            	end
+            end
 
             -- exit the loop
             break
@@ -1254,7 +1299,7 @@ function setLocationFromGPS()
     end
 
     if cachedDir == nil then
-      if isLama then--TODO: put lama direction
+      if isLama then--TODO: test this
       	local x, y, z, d = lama.getPosition()
       	setDirection_lamaFormat(d)
 	  	print("got direction from lama")
