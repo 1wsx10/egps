@@ -1,11 +1,11 @@
 -- This library provide high level turtle movement functions.
 --
 -- Before being able to use them, you should start the GPS with egps.startGPS()
---    then get your current location with egps.setLocationFromGPS().
+--		then get your current location with egps.setLocationFromGPS().
 -- egps.forward(), egps.back(), egps.up(), egps.down(), egps.turnLeft(), egps.turnRight()
---    replace the standard turtle functions.
+--		replace the standard turtle functions.
 -- If you need to use the standard functions, you
---    should call egps.setLocationFromGPS() again before using any egps functions.
+--		should call egps.setLocationFromGPS() again before using any egps functions.
 
 -- Gist at: https://gist.github.com/SquidLord/4741746
 
@@ -54,9 +54,9 @@ local cachedX, cachedY, cachedZ, cachedDir
 -- Directions
 North, West, South, East, Up, Down = 0, 1, 2, 3, 4, 5
 local shortNames = {[North] = "N", [West] = "W", [South] = "S",
-                                    [East] = "E", [Up] = "U", [Down] = "D" }
+[East] = "E", [Up] = "U", [Down] = "D" }
 local deltas = {[North] = {0, 0, -1}, [West] = {-1, 0, 0}, [South] = {0, 0, 1},
-                            [East] = {1, 0, 0}, [Up] = {0, 1, 0}, [Down] = {0, -1, 0}}
+[East] = {1, 0, 0}, [Up] = {0, 1, 0}, [Down] = {0, -1, 0}}
 
 -- cache world geometry
 cachedWorld = {}
@@ -77,9 +77,9 @@ local stopAt, nilCost = 1500, 1000
 -- compatibility with LAMA
 local isLama = false
 if fs.isDir("/.lama") then
-  isLama = true
-  lama.overwrite() --replaces turtle.forward() etc. with lama.forward()
-  print("lama detected, using lama movement...")
+	isLama = true
+	lama.overwrite() --replaces turtle.forward() etc. with lama.forward()
+	print("lama detected, using lama movement...")
 end
 
 ----------------------------------------
@@ -130,8 +130,8 @@ end
 --
 
 function getBlock(bX, bY, bZ)
-  local idx_block = bX..":"..bY..":"..bZ
-  return cachedWorld[idx_block]
+	local idx_block = bX..":"..bY..":"..bZ
+	return cachedWorld[idx_block]
 end
 
 ----------------------------------------
@@ -143,8 +143,8 @@ end
 --
 
 function getBlockDetail(bX, bY, bZ)
-  local idx_block = bX..":"..bY..":"..bZ
-  return cachedWorldDetail[idx_block]
+	local idx_block = bX..":"..bY..":"..bZ
+	return cachedWorldDetail[idx_block]
 end
 
 ----------------------------------------
@@ -156,32 +156,32 @@ end
 --
 
 function drawMap(ox, oy, oz, block, empty, floor, none)
-  resx, resy = term.getSize()
-  ox = ox - math.floor(resx/2)--west = negx
-  oz = oz - math.floor(resy/2)--north = negz
-  block = block or "@"
-  empty = empty or " "
-  floor = floor or "#"
-  none = none or "'"
-  --term.clear()
-  for i=1, resy do
-    for j=1, resx do
-      term.setCursorPos(j, i)
-      if getBlock(ox+j, oy, oz+i) == nil then
-        --draw empty
-        term.write(none)
-      elseif getBlock(ox+j, oy, oz+i) then
-        --draw block
-        term.write(block)
-      elseif getBlock(ox+j, oy-1, oz+i) == true then
-        --draw floor
-        term.write(floor)
-      else
-        term.write(empty)
-      end
-    end
-  end
-  drawTurtleOnMap(ox, oy, oz, cachedX, cachedY, cachedZ, cachedDir)
+	resx, resy = term.getSize()
+	ox = ox - math.floor(resx/2)--west = negx
+	oz = oz - math.floor(resy/2)--north = negz
+	block = block or "@"
+	empty = empty or " "
+	floor = floor or "#"
+	none = none or "'"
+	--term.clear()
+	for i=1, resy do
+		for j=1, resx do
+			term.setCursorPos(j, i)
+			if getBlock(ox+j, oy, oz+i) == nil then
+				--draw empty
+				term.write(none)
+			elseif getBlock(ox+j, oy, oz+i) then
+				--draw block
+				term.write(block)
+			elseif getBlock(ox+j, oy-1, oz+i) == true then
+				--draw floor
+				term.write(floor)
+			else
+				term.write(empty)
+			end
+		end
+	end
+	drawTurtleOnMap(ox, oy, oz, cachedX, cachedY, cachedZ, cachedDir)
 end
 
 ----------------------------------------
@@ -193,19 +193,19 @@ end
 --
 
 function drawTurtleOnMap(ox, oy, oz, x, y, z, d)
-  local resx, resy = term.getSize()
-  term.setCursorPos(math.floor(resx/2) + (x - ox), math.floor(resy/2) + (z - oz))
-  if(d == 0) then
-    term.write("^")--north
-  elseif(d == 1) then
-    term.write("<")--west
-  elseif(d == 2) then
-    term.write("v")--south
-  elseif(d == 3) then
-    term.write(">")
-  else
-    term.write("#")
-  end
+	local resx, resy = term.getSize()
+	term.setCursorPos(math.floor(resx/2) + (x - ox), math.floor(resy/2) + (z - oz))
+	if(d == 0) then
+		term.write("^")--north
+	elseif(d == 1) then
+		term.write("<")--west
+	elseif(d == 2) then
+		term.write("v")--south
+	elseif(d == 3) then
+		term.write(">")
+	else
+		term.write("#")
+	end
 end
 
 ----------------------------------------
@@ -215,7 +215,7 @@ end
 --
 
 function printWorld()
-  print(textutils.serialize(cachedWorld))
+	print(textutils.serialize(cachedWorld))
 end
 
 ----------------------------------------
@@ -225,7 +225,7 @@ end
 --
 
 function getCachedWorld()
-  return cachedWorld
+	return cachedWorld
 end
 
 
@@ -236,11 +236,11 @@ end
 --
 
 function worldSize()--TODO: this does not work.. fix it
-  local count = 0
-  for k in pairs(cachedWorld) do
-    count = count + 1
-  end
-  return count
+	local count = 0
+	for k in pairs(cachedWorld) do
+		count = count + 1
+	end
+	return count
 end
 
 ----------------------------------------
@@ -252,14 +252,14 @@ end
 --
 
 function delCache(sure)
-  if sure then
-    cachedX, cachedY, cachedZ, cachedDir = nil, nil, nil, nil
-    cachedWorld, waypoints, exclusions = {}, {}, {}
-    print("all data deleted from cache")
-    return true
-  else
-    return false
-  end
+	if sure then
+		cachedX, cachedY, cachedZ, cachedDir = nil, nil, nil, nil
+		cachedWorld, waypoints, exclusions = {}, {}, {}
+		print("all data deleted from cache")
+		return true
+	else
+		return false
+	end
 end
 
 ----------------------------------------
@@ -271,15 +271,15 @@ end
 --
 
 function getFile(name)
-  if fs.exists(dataDir.."/"..name) then
-    local file = fs.open(dataDir.."/"..name,"r")
-    local data = file.readAll()
-    file.close()
-    return data
-  else
-    print("file not found: "..name)
-    return ""
-  end
+	if fs.exists(dataDir.."/"..name) then
+		local file = fs.open(dataDir.."/"..name,"r")
+		local data = file.readAll()
+		file.close()
+		return data
+	else
+		print("file not found: "..name)
+		return ""
+	end
 end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -288,80 +288,80 @@ end
 ----
 
 local g_tLuaKeywords = {
-    [ "and" ] = true,
-    [ "break" ] = true,
-    [ "do" ] = true,
-    [ "else" ] = true,
-    [ "elseif" ] = true,
-    [ "end" ] = true,
-    [ "false" ] = true,
-    [ "for" ] = true,
-    [ "function" ] = true,
-    [ "if" ] = true,
-    [ "in" ] = true,
-    [ "local" ] = true,
-    [ "nil" ] = true,
-    [ "not" ] = true,
-    [ "or" ] = true,
-    [ "repeat" ] = true,
-    [ "return" ] = true,
-    [ "then" ] = true,
-    [ "true" ] = true,
-    [ "until" ] = true,
-    [ "while" ] = true,
+	[ "and" ] = true,
+	[ "break" ] = true,
+	[ "do" ] = true,
+	[ "else" ] = true,
+	[ "elseif" ] = true,
+	[ "end" ] = true,
+	[ "false" ] = true,
+	[ "for" ] = true,
+	[ "function" ] = true,
+	[ "if" ] = true,
+	[ "in" ] = true,
+	[ "local" ] = true,
+	[ "nil" ] = true,
+	[ "not" ] = true,
+	[ "or" ] = true,
+	[ "repeat" ] = true,
+	[ "return" ] = true,
+	[ "then" ] = true,
+	[ "true" ] = true,
+	[ "until" ] = true,
+	[ "while" ] = true,
 }
 
 local function serializeImpl( t, tTracking, sIndent )
-    local sType = type(t)
-    if sType == "table" then
-        if tTracking[t] ~= nil then
-            error( "Cannot serialize table with recursive entries", 0 )
-        end
-        tTracking[t] = true
+	local sType = type(t)
+	if sType == "table" then
+		if tTracking[t] ~= nil then
+			error( "Cannot serialize table with recursive entries", 0 )
+		end
+		tTracking[t] = true
 
-        if next(t) == nil then
-            -- Empty tables are simple
-            return "{}"
-        else
-            -- Other tables take more work
-            local sResult = "{\n"
-            local sSubIndent = sIndent .. "  "
-            local tSeen = {}
-            for k,v in ipairs(t) do
-                tSeen[k] = true
-                sResult = sResult .. sSubIndent .. serializeImpl( v, tTracking, sSubIndent ) .. ",\n"
-            end
-            for k,v in pairs(t) do
-                if not tSeen[k] then
-                    local sEntry
-                    if type(k) == "string" and not g_tLuaKeywords[k] and string.match( k, "^[%a_][%a%d_]*$" ) then
-                        sEntry = k .. " = " .. serializeImpl( v, tTracking, sSubIndent ) .. ",\n"
-                    else
-                        sEntry = "[ " .. serializeImpl( k, tTracking, sSubIndent ) .. " ] = " .. serializeImpl( v, tTracking, sSubIndent ) .. ",\n"
-                    end
-                    sResult = sResult .. sSubIndent .. sEntry
-                end
-            end
-            sResult = sResult .. sIndent .. "}"
-            tTracking[t] = nil
-            return sResult
-        end
+		if next(t) == nil then
+			-- Empty tables are simple
+			return "{}"
+		else
+			-- Other tables take more work
+			local sResult = "{\n"
+			local sSubIndent = sIndent .. "	"
+			local tSeen = {}
+			for k,v in ipairs(t) do
+				tSeen[k] = true
+				sResult = sResult .. sSubIndent .. serializeImpl( v, tTracking, sSubIndent ) .. ",\n"
+			end
+			for k,v in pairs(t) do
+				if not tSeen[k] then
+					local sEntry
+					if type(k) == "string" and not g_tLuaKeywords[k] and string.match( k, "^[%a_][%a%d_]*$" ) then
+						sEntry = k .. " = " .. serializeImpl( v, tTracking, sSubIndent ) .. ",\n"
+					else
+						sEntry = "[ " .. serializeImpl( k, tTracking, sSubIndent ) .. " ] = " .. serializeImpl( v, tTracking, sSubIndent ) .. ",\n"
+					end
+					sResult = sResult .. sSubIndent .. sEntry
+				end
+			end
+			sResult = sResult .. sIndent .. "}"
+			tTracking[t] = nil
+			return sResult
+		end
 
-    elseif sType == "string" then
-        return string.format( "%q", t )
+	elseif sType == "string" then
+		return string.format( "%q", t )
 
-    elseif sType == "number" or sType == "boolean" or sType == "nil" then
-        return tostring(t)
+	elseif sType == "number" or sType == "boolean" or sType == "nil" then
+		return tostring(t)
 
-    else
-        error( "Cannot serialize type "..sType, 0 )
+	else
+		error( "Cannot serialize type "..sType, 0 )
 
-    end
+	end
 end
 
 function serialize( t )
-    local tTracking = {}
-    return serializeImpl( t, tTracking, "" )
+	local tTracking = {}
+	return serializeImpl( t, tTracking, "" )
 end
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -374,32 +374,32 @@ end
 --
 
 function setFile(name, data)
-  if fs.isDir(dataDir.."") then
-    local file = fs.open(dataDir.."/"..name,"w")
-    file.write(serialize(data))
-    file.close()
-    return true
-  else
-    print("creating "..name.." file...")
-    fs.makeDir(dataDir.."")
-    return setFile(name, data)
-  end
-  print("a black hole happened")
-  return false
+	if fs.isDir(dataDir.."") then
+		local file = fs.open(dataDir.."/"..name,"w")
+		file.write(serialize(data))
+		file.close()
+		return true
+	else
+		print("creating "..name.." file...")
+		fs.makeDir(dataDir.."")
+		return setFile(name, data)
+	end
+	print("a black hole happened")
+	return false
 end
 
 function loadAll()
-  load()
-  loadDetail()
-  loadWaypoints()
-  loadExclusions()
+	load()
+	loadDetail()
+	loadWaypoints()
+	loadExclusions()
 end
 
 function saveAll()
-  save()
-  saveDetail()
-  saveWaypoints()
-  saveExclusions()
+	save()
+	saveDetail()
+	saveWaypoints()
+	saveExclusions()
 end
 
 ----------------------------------------
@@ -410,30 +410,30 @@ end
 --
 
 function load()
-  local data = getFile("blockData")
-  if data ~= "" then
-    cachedWorld = textutils.unserialize(data)
-    if cachedWorld ~= nil then
-      return true
-    else
-      -- print("could not read blockData file: \n"..data)
-      cachedWorld = {}
-      return false
-    end
-  else
-    print("no world data")
-    return false
-  end
+	local data = getFile("blockData")
+	if data ~= "" then
+		cachedWorld = textutils.unserialize(data)
+		if cachedWorld ~= nil then
+			return true
+		else
+			-- print("could not read blockData file: \n"..data)
+			cachedWorld = {}
+			return false
+		end
+	else
+		print("no world data")
+		return false
+	end
 end
 
 function loadFile(name)
-  local data = getFile(name)
-  if data ~= "" then
-    return textutils.unserialize(data)
-  else
-    print("no data or file doesn't exist")
-    return false
-  end
+	local data = getFile(name)
+	if data ~= "" then
+		return textutils.unserialize(data)
+	else
+		print("no data or file doesn't exist")
+		return false
+	end
 end
 
 ----------------------------------------
@@ -444,8 +444,8 @@ end
 --
 
 function save()
-  detectAll()
-  setFile("blockData", cachedWorld)
+	detectAll()
+	setFile("blockData", cachedWorld)
 end
 
 ----------------------------------------
@@ -456,21 +456,21 @@ end
 --
 
 function loadDetail()
-  local data = getFile("blockDataDetail")
-  if data ~= {} then
-    cachedWorldDetail = textutils.unserialize(data)
-    if cachedWorldDetail ~= nil then
-      return true
-    else
-      -- print("could not read blockDataDetail file: \n"..data)
-      cachedWorldDetail = {}
-      return false
-    end
-  else
-  print("no detailed world data")
-  saveDetail()
-  return false
- end
+	local data = getFile("blockDataDetail")
+	if data ~= {} then
+		cachedWorldDetail = textutils.unserialize(data)
+		if cachedWorldDetail ~= nil then
+			return true
+		else
+			-- print("could not read blockDataDetail file: \n"..data)
+			cachedWorldDetail = {}
+			return false
+		end
+	else
+		print("no detailed world data")
+		saveDetail()
+		return false
+	end
 end
 
 ----------------------------------------
@@ -482,7 +482,7 @@ end
 
 function saveDetail(name)
 	name = name or "blockDataDetail"
-  setFile(name, cachedWorldDetail)
+	setFile(name, cachedWorldDetail)
 end
 
 ----------------------------------------
@@ -493,20 +493,20 @@ end
 --
 
 function loadWaypoints()
-  local data = getFile("waypoints")
-  if data ~= {} then
-    waypoints = textutils.unserialize(data)
-    if waypoints ~= nil then
-      return true
-    else
-      -- print("could not read waypoints file: \n"..data)
-      waypoints = {}
-      return false
-    end
-  else
-  print("no waypoint data")
-  return false
- end
+	local data = getFile("waypoints")
+	if data ~= {} then
+		waypoints = textutils.unserialize(data)
+		if waypoints ~= nil then
+			return true
+		else
+			-- print("could not read waypoints file: \n"..data)
+			waypoints = {}
+			return false
+		end
+	else
+		print("no waypoint data")
+		return false
+	end
 end
 
 ----------------------------------------
@@ -517,7 +517,7 @@ end
 --
 
 function saveWaypoints()
-  setFile("waypoints", waypoints)
+	setFile("waypoints", waypoints)
 end
 
 ----------------------------------------
@@ -529,21 +529,21 @@ end
 --
 
 function setWaypoint(name, x, y, z, d)
-  d = d or 0
-  x = x or nil
-  y = y or nil
-  z = z or nil
-  if x == nil and y == nil and z == nil then
-    waypoints[name] = nil
-    print("waypoint deleted")
-    return true
-  end
-  waypoints[name] = {x, y, z, d}
-  if waypoints[name] ~= nil then
-    return true
-  else
-    return false
-  end
+	d = d or 0
+	x = x or nil
+	y = y or nil
+	z = z or nil
+	if x == nil and y == nil and z == nil then
+		waypoints[name] = nil
+		print("waypoint deleted")
+		return true
+	end
+	waypoints[name] = {x, y, z, d}
+	if waypoints[name] ~= nil then
+		return true
+	else
+		return false
+	end
 end
 
 ----------------------------------------
@@ -556,17 +556,17 @@ end
 --
 
 function getWaypoint(name)
-  local x, y, z, d
-  if waypoints[name] ~= nil then
-    x = waypoints[name][1]
-    y = waypoints[name][2]
-    z = waypoints[name][3]
-    d = waypoints[name][4]
-  return x, y, z, d
-  else
-    print("waypoint "..name.." not found")
-    return nil, nil, nil, nil
-  end
+	local x, y, z, d
+	if waypoints[name] ~= nil then
+		x = waypoints[name][1]
+		y = waypoints[name][2]
+		z = waypoints[name][3]
+		d = waypoints[name][4]
+		return x, y, z, d
+	else
+		print("waypoint "..name.." not found")
+		return nil, nil, nil, nil
+	end
 end
 
 ----------------------------------------
@@ -577,20 +577,20 @@ end
 --
 
 function loadExclusions()
-  local data = getFile("exclusions")
-  if data ~= {} then
-    exclusions = textutils.unserialize(data)
-    if exclusions ~= nil then
-      return true
-    else
-      print("could not read exclusions file: \n"..data)
-      exclusions = {}
-      return false
-    end
-  else
-  print("no exclusion data")
-  return false
- end
+	local data = getFile("exclusions")
+	if data ~= {} then
+		exclusions = textutils.unserialize(data)
+		if exclusions ~= nil then
+			return true
+		else
+			print("could not read exclusions file: \n"..data)
+			exclusions = {}
+			return false
+		end
+	else
+		print("no exclusion data")
+		return false
+	end
 end
 
 ----------------------------------------
@@ -601,7 +601,7 @@ end
 --
 
 function saveExclusions()
-  setFile("exclusions", exclusions)
+	setFile("exclusions", exclusions)
 end
 
 ----------------------------------------
@@ -613,21 +613,21 @@ end
 --
 
 function setExclusion(idx, y, z)
-  if y == nil and z == nil then
-    local x = tonumber(string.match(idx, "(.*):"))
-    y = tonumber(string.match(idx, ":(.*):"))
-    z = tonumber(string.match(idx, ":(.*)"))
-  else
-    local x = idx
-    idx = x..":"..y..":"..z
-  end
-  d = d or 0
-  exclusions[idx] = {x, y, z}
-  if exclusions[idx] ~= nil then
-    return true
-  else
-    return false
-  end
+	if y == nil and z == nil then
+		local x = tonumber(string.match(idx, "(.*):"))
+		y = tonumber(string.match(idx, ":(.*):"))
+		z = tonumber(string.match(idx, ":(.*)"))
+	else
+		local x = idx
+		idx = x..":"..y..":"..z
+	end
+	d = d or 0
+	exclusions[idx] = {x, y, z}
+	if exclusions[idx] ~= nil then
+		return true
+	else
+		return false
+	end
 end
 
 ----------------------------------------
@@ -639,28 +639,28 @@ end
 --
 
 function excludeZone(x, y, z, x2, y2, z2, include)
-  local temp, temp2
-  temp, temp2 = x, x2
-  x = math.min(temp, temp2)
-  x2 = math.max(temp, temp2)
-  temp, temp2 = y, y2
-  y = math.min(temp, temp2)
-  y2 = math.max(temp, temp2)
-  temp, temp2 = z, z2
-  z = math.min(temp, temp2)
-  z2 = math.max(temp, temp2)
+	local temp, temp2
+	temp, temp2 = x, x2
+	x = math.min(temp, temp2)
+	x2 = math.max(temp, temp2)
+	temp, temp2 = y, y2
+	y = math.min(temp, temp2)
+	y2 = math.max(temp, temp2)
+	temp, temp2 = z, z2
+	z = math.min(temp, temp2)
+	z2 = math.max(temp, temp2)
 
-  for i = x, x2 do
-    for j = y, y2 do
-      for k = z, z2 do
-        if include then
-          delExclusion(i, j, k)
-        else
-          setExclusion(i, j, k)
-        end
-      end
-    end
-  end
+	for i = x, x2 do
+		for j = y, y2 do
+			for k = z, z2 do
+				if include then
+					delExclusion(i, j, k)
+				else
+					setExclusion(i, j, k)
+				end
+			end
+		end
+	end
 end
 
 ----------------------------------------
@@ -672,23 +672,23 @@ end
 --
 
 function getExclusion(idx, y, z)
-  if y == nil and z == nil then
-    local x = tonumber(string.match(idx, "(.*):"))
-    y = tonumber(string.match(idx, ":(.*):"))
-    z = tonumber(string.match(idx, ":(.*)"))
-  else
-    local x = idx
-    idx = x..":"..y..":"..z
-  end
-  if exclusions[idx] ~= nil then
-    x = exclusions[idx][1]
-    y = exclusions[idx][2]
-    z = exclusions[idx][3]
-  return x, y, z
-  else
-    print("exclusion "..idx.." not found")
-    return nil, nil, nil
-  end
+	if y == nil and z == nil then
+		local x = tonumber(string.match(idx, "(.*):"))
+		y = tonumber(string.match(idx, ":(.*):"))
+		z = tonumber(string.match(idx, ":(.*)"))
+	else
+		local x = idx
+		idx = x..":"..y..":"..z
+	end
+	if exclusions[idx] ~= nil then
+		x = exclusions[idx][1]
+		y = exclusions[idx][2]
+		z = exclusions[idx][3]
+		return x, y, z
+	else
+		print("exclusion "..idx.." not found")
+		return nil, nil, nil
+	end
 end
 
 ----------------------------------------
@@ -700,17 +700,17 @@ end
 --
 
 function delExclusion(idx, y, z)
-  if y == nil and z == nil then
-    local x = tonumber(string.match(idx, "(.*):"))
-    y = tonumber(string.match(idx, ":(.*):"))
-    z = tonumber(string.match(idx, ":(.*)"))
-  else
-    local x = idx
-    idx = x..":"..y..":"..z
-  end
-  exclusions[idx] = nil
-  print("exclusion deleted")
-  return true
+	if y == nil and z == nil then
+		local x = tonumber(string.match(idx, "(.*):"))
+		y = tonumber(string.match(idx, ":(.*):"))
+		z = tonumber(string.match(idx, ":(.*)"))
+	else
+		local x = idx
+		idx = x..":"..y..":"..z
+	end
+	exclusions[idx] = nil
+	print("exclusion deleted")
+	return true
 end
 
 ----------------------------------------
@@ -721,13 +721,13 @@ end
 --
 
 function empty(table)
-  table = table or cachedWorld
-  for _, value in pairs(table) do
-    if value ~= nil then
-          return false
-    end
-  end
-  return true
+	table = table or cachedWorld
+	for _, value in pairs(table) do
+		if value ~= nil then
+			return false
+		end
+	end
+	return true
 end
 
 ----------------------------------------
@@ -737,49 +737,49 @@ end
 --
 
 function detectAll()
-  local F, U, D = deltas[cachedDir], deltas[Up], deltas[Down]
-  local block
+	local F, U, D = deltas[cachedDir], deltas[Up], deltas[Down]
+	local block
 
-  local time = {}
-  time.day = os.day()
-  time.time = os.time()
+	local time = {}
+	time.day = os.day()
+	time.time = os.time()
 
-  cachedWorld[cachedX..":"..cachedY..":"..cachedZ] = 0
-  if not cachedWorldDetail[cachedX..":"..cachedY..":"..cachedZ] then cachedWorldDetail[cachedX..":"..cachedY..":"..cachedZ] = {} end
-  cachedWorldDetail[cachedX..":"..cachedY..":"..cachedZ].block = {false, "no block to inspect"}
-  cachedWorldDetail[cachedX..":"..cachedY..":"..cachedZ].time = {time}
+	cachedWorld[cachedX..":"..cachedY..":"..cachedZ] = 0
+	if not cachedWorldDetail[cachedX..":"..cachedY..":"..cachedZ] then cachedWorldDetail[cachedX..":"..cachedY..":"..cachedZ] = {} end
+	cachedWorldDetail[cachedX..":"..cachedY..":"..cachedZ].block = {false, "no block to inspect"}
+	cachedWorldDetail[cachedX..":"..cachedY..":"..cachedZ].time = {time}
 
-  block = 0
-  if turtle.detect()      then block = 1 end
-  cachedWorld[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])] = block
-  if not cachedWorldDetail[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])] then cachedWorldDetail[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])] = {} end
-  cachedWorldDetail[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])].block = {turtle.inspect()}
-  cachedWorldDetail[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])].time = {time}
+	block = 0
+	if turtle.detect()			then block = 1 end
+	cachedWorld[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])] = block
+	if not cachedWorldDetail[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])] then cachedWorldDetail[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])] = {} end
+	cachedWorldDetail[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])].block = {turtle.inspect()}
+	cachedWorldDetail[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])].time = {time}
 
-  block = 0
-  if turtle.detectUp()    then block = 1 end
-  cachedWorld[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])] = block
-  if not cachedWorldDetail[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])] then cachedWorldDetail[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])] = {} end
-  cachedWorldDetail[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])].block = {turtle.inspectUp()}
-  cachedWorldDetail[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])].time = {time}
+	block = 0
+	if turtle.detectUp()		then block = 1 end
+	cachedWorld[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])] = block
+	if not cachedWorldDetail[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])] then cachedWorldDetail[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])] = {} end
+	cachedWorldDetail[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])].block = {turtle.inspectUp()}
+	cachedWorldDetail[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])].time = {time}
 
-  block = 0
-  if turtle.detectDown()  then block = 1 end
-  cachedWorld[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])] = block
-  if not cachedWorldDetail[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])] then cachedWorldDetail[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])] = {} end
-  cachedWorldDetail[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])].block = {turtle.inspectDown()}
-  cachedWorldDetail[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])].time = {time}
+	block = 0
+	if turtle.detectDown()	then block = 1 end
+	cachedWorld[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])] = block
+	if not cachedWorldDetail[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])] then cachedWorldDetail[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])] = {} end
+	cachedWorldDetail[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])].block = {turtle.inspectDown()}
+	cachedWorldDetail[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])].time = {time}
 end
 
 -- Legacy detectAll --------------only writes 0... fucking weird
 --[[
 function detectAll()
-  local F, U, D = deltas[cachedDir], deltas[Up], deltas[Down]
+local F, U, D = deltas[cachedDir], deltas[Up], deltas[Down]
 
-  cachedWorld[cachedX..":"..cachedY..":"..cachedZ] = 0
-  if not turtle.detect()     then cachedWorld[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])] = 0 end
-  if not turtle.detectUp()   then cachedWorld[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])] = 0 end
-  if not turtle.detectDown() then cachedWorld[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])] = 0 end
+cachedWorld[cachedX..":"..cachedY..":"..cachedZ] = 0
+if not turtle.detect()		 then cachedWorld[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])] = 0 end
+if not turtle.detectUp()	 then cachedWorld[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])] = 0 end
+if not turtle.detectDown() then cachedWorld[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])] = 0 end
 end--]]
 
 ----------------------------------------
@@ -793,18 +793,18 @@ function forward()
 	if not cachedX then
 		return turtle.forward()
 	end
-  local D = deltas[cachedDir]--if north, D = {0, 0, -1}
-  local x, y, z = cachedX + D[1], cachedY + D[2], cachedZ + D[3]--adds corisponding delta to direction
-  local idx_pos = x..":"..y..":"..z
+	local D = deltas[cachedDir]--if north, D = {0, 0, -1}
+	local x, y, z = cachedX + D[1], cachedY + D[2], cachedZ + D[3]--adds corisponding delta to direction
+	local idx_pos = x..":"..y..":"..z
 
-  if turtle.forward() then
-    cachedX, cachedY, cachedZ = x, y, z
-    detectAll()
-    return true
-  else
-    cachedWorld[idx_pos] = (turtle.detect() and 1 or 0.5)
-    return false
-  end
+	if turtle.forward() then
+		cachedX, cachedY, cachedZ = x, y, z
+		detectAll()
+		return true
+	else
+		cachedWorld[idx_pos] = (turtle.detect() and 1 or 0.5)
+		return false
+	end
 end
 
 ----------------------------------------
@@ -818,18 +818,18 @@ function ghost_forward()
 	if not cachedX then
 		return false
 	end
-  local D = deltas[cachedDir]--if north, D = {0, 0, -1}
-  local x, y, z = cachedX + D[1], cachedY + D[2], cachedZ + D[3]--adds corisponding delta to direction
-  local idx_pos = x..":"..y..":"..z
+	local D = deltas[cachedDir]--if north, D = {0, 0, -1}
+	local x, y, z = cachedX + D[1], cachedY + D[2], cachedZ + D[3]--adds corisponding delta to direction
+	local idx_pos = x..":"..y..":"..z
 
-  if true then
-    cachedX, cachedY, cachedZ = x, y, z
-    detectAll()
-    return true
-  else
-    cachedWorld[idx_pos] = (turtle.detect() and 1 or 0.5)
-    return false
-  end
+	if true then
+		cachedX, cachedY, cachedZ = x, y, z
+		detectAll()
+		return true
+	else
+		cachedWorld[idx_pos] = (turtle.detect() and 1 or 0.5)
+		return false
+	end
 end
 
 ----------------------------------------
@@ -843,18 +843,18 @@ function back()
 	if not cachedX then
 		return turtle.back()
 	end
-  local D = deltas[cachedDir]
-  local x, y, z = cachedX - D[1], cachedY - D[2], cachedZ - D[3]
-  local idx_pos = x..":"..y..":"..z
+	local D = deltas[cachedDir]
+	local x, y, z = cachedX - D[1], cachedY - D[2], cachedZ - D[3]
+	local idx_pos = x..":"..y..":"..z
 
-  if turtle.back() then
-    cachedX, cachedY, cachedZ = x, y, z
-    detectAll()
-    return true
-  else
-    cachedWorld[idx_pos] = 0.5
-    return false
-  end
+	if turtle.back() then
+		cachedX, cachedY, cachedZ = x, y, z
+		detectAll()
+		return true
+	else
+		cachedWorld[idx_pos] = 0.5
+		return false
+	end
 end
 
 ----------------------------------------
@@ -868,18 +868,18 @@ function ghost_back()
 	if not cachedX then
 		return false
 	end
-  local D = deltas[cachedDir]
-  local x, y, z = cachedX - D[1], cachedY - D[2], cachedZ - D[3]
-  local idx_pos = x..":"..y..":"..z
+	local D = deltas[cachedDir]
+	local x, y, z = cachedX - D[1], cachedY - D[2], cachedZ - D[3]
+	local idx_pos = x..":"..y..":"..z
 
-  if true then
-    cachedX, cachedY, cachedZ = x, y, z
-    detectAll()
-    return true
-  else
-    cachedWorld[idx_pos] = 0.5
-    return false
-  end
+	if true then
+		cachedX, cachedY, cachedZ = x, y, z
+		detectAll()
+		return true
+	else
+		cachedWorld[idx_pos] = 0.5
+		return false
+	end
 end
 
 ----------------------------------------
@@ -893,18 +893,18 @@ function up()
 	if not cachedX then
 		return turtle.up()
 	end
-  local D = deltas[Up]
-  local x, y, z = cachedX + D[1], cachedY + D[2], cachedZ + D[3]
-  local idx_pos = x..":"..y..":"..z
+	local D = deltas[Up]
+	local x, y, z = cachedX + D[1], cachedY + D[2], cachedZ + D[3]
+	local idx_pos = x..":"..y..":"..z
 
-  if turtle.up() then
-    cachedX, cachedY, cachedZ = x, y, z
-    detectAll()
-    return true
-  else
-    cachedWorld[idx_pos] = (turtle.detectUp() and 1 or 0.5)
-    return false
-  end
+	if turtle.up() then
+		cachedX, cachedY, cachedZ = x, y, z
+		detectAll()
+		return true
+	else
+		cachedWorld[idx_pos] = (turtle.detectUp() and 1 or 0.5)
+		return false
+	end
 end
 
 ----------------------------------------
@@ -918,19 +918,19 @@ function down()
 	if not cachedX then
 		return turtle.down()
 	end
-  local D = deltas[Down]
-  local x, y, z = cachedX + D[1], cachedY + D[2], cachedZ + D[3]
-  local idx_pos = x..":"..y..":"..z
+	local D = deltas[Down]
+	local x, y, z = cachedX + D[1], cachedY + D[2], cachedZ + D[3]
+	local idx_pos = x..":"..y..":"..z
 
-  if turtle.down() then
-    cachedX, cachedY, cachedZ = x, y, z
-    detectAll()
-    return true
-  else
-    detectAll()
-    cachedWorld[idx_pos] = (turtle.detectDown() and 1 or 0.5)
-    return false
-  end
+	if turtle.down() then
+		cachedX, cachedY, cachedZ = x, y, z
+		detectAll()
+		return true
+	else
+		detectAll()
+		cachedWorld[idx_pos] = (turtle.detectDown() and 1 or 0.5)
+		return false
+	end
 end
 
 ----------------------------------------
@@ -944,10 +944,10 @@ function turnLeft()
 	if not cachedX then
 		return turtle.turnLeft()
 	end
-  cachedDir = (cachedDir + 1) % 4
-  turtle.turnLeft()
-  detectAll()
-  return true
+	cachedDir = (cachedDir + 1) % 4
+	turtle.turnLeft()
+	detectAll()
+	return true
 end
 
 ----------------------------------------
@@ -961,10 +961,10 @@ function turnRight()
 	if not cachedX then
 		return turtle.turnRight()
 	end
-  cachedDir = (cachedDir + 3) % 4
-  turtle.turnRight()
-  detectAll()
-  return true
+	cachedDir = (cachedDir + 3) % 4
+	turtle.turnRight()
+	detectAll()
+	return true
 end
 
 ----------------------------------------
@@ -979,18 +979,18 @@ function turnTo(_targetDir)
 	if not cachedX then
 		return false
 	end
-  --print(string.format("target dir: {0}\ncachedDir: {1}", _targetDir, cachedDir))
-  if _targetDir == cachedDir then
-    return true
-  elseif ((_targetDir - cachedDir + 4) % 4) == 1 then--moveTo caused exception
-    turnLeft()
-  elseif ((cachedDir - _targetDir + 4) % 4) == 1 then
-    turnRight()
-  else
-    turnLeft()
-    turnLeft()
-  end
-  return true
+	--print(string.format("target dir: {0}\ncachedDir: {1}", _targetDir, cachedDir))
+	if _targetDir == cachedDir then
+		return true
+	elseif ((_targetDir - cachedDir + 4) % 4) == 1 then--moveTo caused exception
+		turnLeft()
+	elseif ((cachedDir - _targetDir + 4) % 4) == 1 then
+		turnRight()
+	else
+		turnLeft()
+		turnLeft()
+	end
+	return true
 end
 
 ----------------------------------------
@@ -1000,8 +1000,8 @@ end
 --
 
 function clearWorld()
-  cachedWorld = {}
-  detectAll()
+	cachedWorld = {}
+	detectAll()
 end
 
 ----------------------------------------
@@ -1013,7 +1013,7 @@ end
 --
 
 local function heuristic_cost_estimate(x1, y1, z1, x2, y2, z2)
-  return math.abs(x2 - x1) + math.abs(y2 - y1) + math.abs(z2 - z1)
+	return math.abs(x2 - x1) + math.abs(y2 - y1) + math.abs(z2 - z1)
 end
 
 ----------------------------------------
@@ -1025,14 +1025,14 @@ end
 --
 
 local function reconstruct_path(_cameFrom, _currentNode)
-  if _cameFrom[_currentNode] ~= nil then
-    local dir, nextNode = _cameFrom[_currentNode][1], _cameFrom[_currentNode][2]
-    local path = reconstruct_path(_cameFrom, nextNode)
-    table.insert(path, dir)
-    return path
-  else
-    return {}
-  end
+	if _cameFrom[_currentNode] ~= nil then
+		local dir, nextNode = _cameFrom[_currentNode][1], _cameFrom[_currentNode][2]
+		local path = reconstruct_path(_cameFrom, nextNode)
+		table.insert(path, dir)
+		return path
+	else
+		return {}
+	end
 end
 
 ----------------------------------------
@@ -1044,72 +1044,72 @@ end
 --
 
 local function a_star(x1, y1, z1, x2, y2, z2, discover, priority)
-  discover = discover or 1
-  local start, idx_start = {x1, y1, z1}, x1..":"..y1..":"..z1
-  local goal,  idx_goal  = {x2, y2, z2}, x2..":"..y2..":"..z2
-  priority = priority or false
+	discover = discover or 1
+	local start, idx_start = {x1, y1, z1}, x1..":"..y1..":"..z1
+	local goal,	idx_goal	= {x2, y2, z2}, x2..":"..y2..":"..z2
+	priority = priority or false
 
-  if exclusions == nil then
-    loadExclusions()
-  end
+	if exclusions == nil then
+		loadExclusions()
+	end
 
-  if exclusions[idx_goal] ~= nil and not priority then
-    print("goal is in exclusion zone")
-    return {}
-  end
+	if exclusions[idx_goal] ~= nil and not priority then
+		print("goal is in exclusion zone")
+		return {}
+	end
 
-  if (cachedWorld[idx_goal] or 0) == 0 then
-    local openset, closedset, cameFrom, g_score, f_score, tries = {}, {}, {}, {}, {}, 0
+	if (cachedWorld[idx_goal] or 0) == 0 then
+		local openset, closedset, cameFrom, g_score, f_score, tries = {}, {}, {}, {}, {}, 0
 
-    openset[idx_start] = start
-    g_score[idx_start] = 0
-    f_score[idx_start] = heuristic_cost_estimate(x1, y1, z1, x2, y2, z2)
+		openset[idx_start] = start
+		g_score[idx_start] = 0
+		f_score[idx_start] = heuristic_cost_estimate(x1, y1, z1, x2, y2, z2)
 
-    while not empty(openset) do
-          local current, idx_current
-          local cur_f = 9999999
+		while not empty(openset) do
+			local current, idx_current
+			local cur_f = 9999999
 
-          for idx_cur, cur in pairs(openset) do --for each entry in openset
-            if cur ~= nil and f_score[idx_cur] <= cur_f then
-                  idx_current, current, cur_f = idx_cur, cur, f_score[idx_cur]
-            end
-          end
-          if idx_current == idx_goal then
-            return reconstruct_path(cameFrom, idx_goal)
-          end
+			for idx_cur, cur in pairs(openset) do --for each entry in openset
+				if cur ~= nil and f_score[idx_cur] <= cur_f then
+					idx_current, current, cur_f = idx_cur, cur, f_score[idx_cur]
+				end
+			end
+			if idx_current == idx_goal then
+				return reconstruct_path(cameFrom, idx_goal)
+			end
 
-          -- no more than 500 moves
-          if cur_f >= stopAt then
-            break
-          end
+			-- no more than 500 moves
+			if cur_f >= stopAt then
+				break
+			end
 
-          openset[idx_current] = nil
-          closedset[idx_current] = true
+			openset[idx_current] = nil
+			closedset[idx_current] = true
 
-          local x3, y3, z3 = current[1], current[2], current[3]
+			local x3, y3, z3 = current[1], current[2], current[3]
 
-          for dir = 0, 5 do -- for all direction find the neighbor of the current position, put them on the openset
-            local D = deltas[dir]
-            local x4, y4, z4 = x3 + D[1], y3 + D[2], z3 + D[3]
-            local neighbor, idx_neighbor = {x4, y4, z4}, x4..":"..y4..":"..z4
-            if (exclusions[idx_neighbor] == nil or priority) and (cachedWorld[idx_neighbor] or 0) == 0 then -- if its free or unknow and not on exclusion list
-                  if closedset[idx_neighbor] == nil then -- if not closed
-                    local tentative_g_score = g_score[idx_current] + ((cachedWorld[idx_neighbor] == nil) and discover or 1)
-                    --if block is undiscovered and there is a value for discover, it adds the discover value. else, it adds 1
-                    if openset[idx_neighbor] == nil or tentative_g_score <= g_score[idx_neighbor] then -- tentative_g_score is always at least 1 more than g_score[idx_neighbor] T.T
-                    --evaluates to if its not on the open list
-                          cameFrom[idx_neighbor] = {dir, idx_current}
-                          g_score[idx_neighbor] = tentative_g_score
-                          f_score[idx_neighbor] = tentative_g_score + heuristic_cost_estimate(x4, y4, z4, x2, y2, z2)
-                          openset[idx_neighbor] = neighbor
-                    end
-                  end
-            end
-          end
-    end
-  end
-  print("no path found")
-  return {}
+			for dir = 0, 5 do -- for all direction find the neighbor of the current position, put them on the openset
+				local D = deltas[dir]
+				local x4, y4, z4 = x3 + D[1], y3 + D[2], z3 + D[3]
+				local neighbor, idx_neighbor = {x4, y4, z4}, x4..":"..y4..":"..z4
+				if (exclusions[idx_neighbor] == nil or priority) and (cachedWorld[idx_neighbor] or 0) == 0 then -- if its free or unknow and not on exclusion list
+					if closedset[idx_neighbor] == nil then -- if not closed
+						local tentative_g_score = g_score[idx_current] + ((cachedWorld[idx_neighbor] == nil) and discover or 1)
+						--if block is undiscovered and there is a value for discover, it adds the discover value. else, it adds 1
+						if openset[idx_neighbor] == nil or tentative_g_score <= g_score[idx_neighbor] then -- tentative_g_score is always at least 1 more than g_score[idx_neighbor] T.T
+							--evaluates to if its not on the open list
+							cameFrom[idx_neighbor] = {dir, idx_current}
+							g_score[idx_neighbor] = tentative_g_score
+							f_score[idx_neighbor] = tentative_g_score + heuristic_cost_estimate(x4, y4, z4, x2, y2, z2)
+							openset[idx_neighbor] = neighbor
+						end
+					end
+				end
+			end
+		end
+	end
+	print("no path found")
+	return {}
 end
 
 ----------------------------------------
@@ -1121,34 +1121,34 @@ end
 --
 
 function moveTo(_targetX, _targetY, _targetZ, _targetDir, changeDir, discover)
-  changeDir = changeDir or false
-  while cachedX ~= _targetX or cachedY ~= _targetY or cachedZ ~= _targetZ do
-    local path = a_star(cachedX, cachedY, cachedZ, _targetX, _targetY, _targetZ, discover)
-    if #path == 0 then
-          return false
-    end
-    --print(textutils.serialize(table))
-    for i, dir in ipairs(path) do
-          if dir == Up then
-            if not up() then
-                  break
-            end
-          elseif dir == Down then
-            if not down() then
-                  break
-            end
-          else
-            turnTo(dir)
-            if not forward() then
-                  break
-            end
-          end
-    end
-  end
-  if changeDir then
-    turnTo(_targetDir)
-  end
-  return true
+	changeDir = changeDir or false
+	while cachedX ~= _targetX or cachedY ~= _targetY or cachedZ ~= _targetZ do
+		local path = a_star(cachedX, cachedY, cachedZ, _targetX, _targetY, _targetZ, discover)
+		if #path == 0 then
+			return false
+		end
+		--print(textutils.serialize(table))
+		for i, dir in ipairs(path) do
+			if dir == Up then
+				if not up() then
+					break
+				end
+			elseif dir == Down then
+				if not down() then
+					break
+				end
+			else
+				turnTo(dir)
+				if not forward() then
+					break
+				end
+			end
+		end
+	end
+	if changeDir then
+		turnTo(_targetDir)
+	end
+	return true
 end
 
 
@@ -1160,17 +1160,17 @@ end
 --
 
 function progressBar(percent)
-  term.write("[")
-  for i=1, 10 do
-    if math.floor(percent/10) >= i then
-      term.write("|")
-    elseif math.ceil(percent/10) == i then
-      term.write(":")
-    else
-      term.write(" ")
-    end
-  end
-  term.write("]")
+	term.write("[")
+	for i=1, 10 do
+		if math.floor(percent/10) >= i then
+			term.write("|")
+		elseif math.ceil(percent/10) == i then
+			term.write(":")
+		else
+			term.write(" ")
+		end
+	end
+	term.write("]")
 end
 
 ------------------------------------------
@@ -1184,79 +1184,79 @@ end
 --
 
 function explore(_range, limitY, drawAMap)--TODO: flag to explore previously explored blocks
-  local ox, oy, oz, od = locate()
-  local x, y, z, d = 0, 0, 0, 0
-  local i = 0
-  local total = 0
-  local toCheck = {}
-  local count = 0
-  local maxCount
-  local idx
-  local dist
-  local skip
-  local yVal = _range
-  drawMap = drawMap or false
-  limitY = limitY or false
+	local ox, oy, oz, od = locate()
+	local x, y, z, d = 0, 0, 0, 0
+	local i = 0
+	local total = 0
+	local toCheck = {}
+	local count = 0
+	local maxCount
+	local idx
+	local dist
+	local skip
+	local yVal = _range
+	drawMap = drawMap or false
+	limitY = limitY or false
 
-  if limitY then
-    yVal = 1
-  end
+	if limitY then
+		yVal = 1
+	end
 
-  for dx = -_range, _range do
-    for dy = -yVal, yVal do
-      for dz = -_range, _range do
-        idx = ox+dx..":"..oy+dy..":"..oz+dz
-        toCheck[idx] = {ox+dx, oy+dy, oz+dz}--set up the toCheck table
-        count = count + 1
-      end
-    end
-  end
+	for dx = -_range, _range do
+		for dy = -yVal, yVal do
+			for dz = -_range, _range do
+				idx = ox+dx..":"..oy+dy..":"..oz+dz
+				toCheck[idx] = {ox+dx, oy+dy, oz+dz}--set up the toCheck table
+				count = count + 1
+			end
+		end
+	end
 
-  maxCount = count
-  while count > 1 do--go through all entries in table
-    x, y, z, d = locate()
-    term.clear()
-    term.setCursorPos(1, 1)
-    if drawAMap then
-      drawMap(ox, oy, oz)
-      drawTurtleOnMap(ox, oy, oz, x, y, z, d)
-      term.setCursorPos(1, 1)
-    end
-    progressBar(100*(maxCount - count)/(maxCount))
-    dist = 500
-    skip = false
+	maxCount = count
+	while count > 1 do--go through all entries in table
+		x, y, z, d = locate()
+		term.clear()
+		term.setCursorPos(1, 1)
+		if drawAMap then
+			drawMap(ox, oy, oz)
+			drawTurtleOnMap(ox, oy, oz, x, y, z, d)
+			term.setCursorPos(1, 1)
+		end
+		progressBar(100*(maxCount - count)/(maxCount))
+		dist = 500
+		skip = false
 
-    for k, v in pairs(toCheck) do--find closest block to check
-      if v[1] == x and v[2] == y and v[3] == z then--if on the block then remove from list
-        toCheck[k] = nil
-        skip = true--and run again
-        count = count - 1
-        maxCount = maxCount - 1
-        break
-      elseif (math.abs(x - v[1]) + math.abs(y - v[2]) + math.abs(z - v[3])) < dist then
-        dist = math.abs(x - v[1]) + math.abs(y - v[2]) + math.abs(z - v[3])--TODO: pathfind to the location and use number of instructions instead of huristic distance
-        idx = k
-        if dist == 1 then
-          break
-        end
-      end
-    end
+		for k, v in pairs(toCheck) do--find closest block to check
+			if v[1] == x and v[2] == y and v[3] == z then--if on the block then remove from list
+				toCheck[k] = nil
+				skip = true--and run again
+				count = count - 1
+				maxCount = maxCount - 1
+				break
+			elseif (math.abs(x - v[1]) + math.abs(y - v[2]) + math.abs(z - v[3])) < dist then
+				dist = math.abs(x - v[1]) + math.abs(y - v[2]) + math.abs(z - v[3])--TODO: pathfind to the location and use number of instructions instead of huristic distance
+				idx = k
+				if dist == 1 then
+					break
+				end
+			end
+		end
 
-    if not skip then
-      count = count - 1
-      moveTo(toCheck[idx][1], toCheck[idx][2], toCheck[idx][3], d, false, nilCost)--still not sure about nilcost
-      toCheck[idx] = nil
-    end
-    sleep(0)--yield... remove this if possible
-  end
+		if not skip then
+			count = count - 1
+			moveTo(toCheck[idx][1], toCheck[idx][2], toCheck[idx][3], d, false, nilCost)--still not sure about nilcost
+			toCheck[idx] = nil
+		end
+		sleep(0)--yield... remove this if possible
+	end
 
 
-  term.clear()
-  term.setCursorPos(1, 1)
-  progressBar(100)
-  -- Go back to the starting point
-  print(string.format("\nreturning..."))
-  moveTo(ox, oy, oz, od, false, nilCost)
+	term.clear()
+	term.setCursorPos(1, 1)
+	progressBar(100)
+	-- Go back to the starting point
+	print(string.format("\nreturning..."))
+	moveTo(ox, oy, oz, od, false, nilCost)
 end
 
 ------------------------------------------
@@ -1267,37 +1267,37 @@ end
 --
 
 function discoverWorld(_range)
-  local x, y, z, d = locate()
-  local i = 0
-  local total = 0
-  for j=1, _range do
-    total = total + math.pow(j*2+1, 3)
-  end
+	local x, y, z, d = locate()
+	local i = 0
+	local total = 0
+	for j=1, _range do
+		total = total + math.pow(j*2+1, 3)
+	end
 
-  -- Try to go to every location in the cuboid
-  for r = 1, _range do
-    for dx = -r, r do
-      for dy = -r, r do
-        for dz = -r, r do
-          local idx_goal = (x+dx)..":"..(y+dy)..":"..(z+dz)
-          i = i + 1
-          term.setCursorPos(1, 1)
-          term.clear()--TODO: test this
-          --print("completion: "..math.floor(i*100/total).."%")
-          progressBar(math.floor(i*100/total))
-          if cachedWorld[idx_goal] == nil then
-            moveTo(x+dx, y+dy, z+dz, cachedDir, false, nilCost)
-            --sleep(0.01)
-          end
-        end
-      end
-    end
-  end
+	-- Try to go to every location in the cuboid
+	for r = 1, _range do
+		for dx = -r, r do
+			for dy = -r, r do
+				for dz = -r, r do
+					local idx_goal = (x+dx)..":"..(y+dy)..":"..(z+dz)
+					i = i + 1
+					term.setCursorPos(1, 1)
+					term.clear()--TODO: test this
+					--print("completion: "..math.floor(i*100/total).."%")
+					progressBar(math.floor(i*100/total))
+					if cachedWorld[idx_goal] == nil then
+						moveTo(x+dx, y+dy, z+dz, cachedDir, false, nilCost)
+						--sleep(0.01)
+					end
+				end
+			end
+		end
+	end
 
-  -- Go back to the starting point
-  moveTo(x, y, z, d)
-  term.setCursorPos(0, 0)
-  --term.clear()
+	-- Go back to the starting point
+	moveTo(x, y, z, d)
+	term.setCursorPos(0, 0)
+	--term.clear()
 end
 
 ----------------------------------------
@@ -1308,39 +1308,39 @@ end
 --
 
 function setLocation(x, y, z, d)
-  cachedX, cachedY, cachedZ = x, y, z
-  if d == 0 then
-    d = "north"
-    cachedDir = North
-  elseif string.lower(d) == "north" then
-    d = "north"
-    cachedDir = North
-  elseif d == 1 then
-    d = "west"
-    cachedDir = West
-  elseif string.lower(d) == "west" then
-    d = "west"
-    cachedDir = West
-  elseif d == 2 then
-    d = "south"
-    cachedDir = South
-  elseif string.lower(d) == "south" then
-    d = "south"
-    cachedDir = South
-  elseif d == 3 then
-    d = "east"
-    cachedDir = East
-  elseif string.lower(d) == "east" then
-    d = "east"
-    cachedDir = East
-  else
-    print("unknown direction")
-    return false
-  end
-  if isLama then
-    lama.setPosition(x, y, z, d)
-  end
-  return cachedX, cachedY, cachedZ, cachedDir
+	cachedX, cachedY, cachedZ = x, y, z
+	if d == 0 then
+		d = "north"
+		cachedDir = North
+	elseif string.lower(d) == "north" then
+		d = "north"
+		cachedDir = North
+	elseif d == 1 then
+		d = "west"
+		cachedDir = West
+	elseif string.lower(d) == "west" then
+		d = "west"
+		cachedDir = West
+	elseif d == 2 then
+		d = "south"
+		cachedDir = South
+	elseif string.lower(d) == "south" then
+		d = "south"
+		cachedDir = South
+	elseif d == 3 then
+		d = "east"
+		cachedDir = East
+	elseif string.lower(d) == "east" then
+		d = "east"
+		cachedDir = East
+	else
+		print("unknown direction")
+		return false
+	end
+	if isLama then
+		lama.setPosition(x, y, z, d)
+	end
+	return cachedX, cachedY, cachedZ, cachedDir
 end
 
 ----------------------------------------
@@ -1351,27 +1351,27 @@ end
 --
 
 function startGPS()
-    local netOpen, modemSide = false, nil
+	local netOpen, modemSide = false, nil
 
-    for _, side in pairs(rs.getSides()) do    -- for all sides
-        if peripheral.getType(side) == "modem" then  -- find the modem
-            modemSide = side
-            if rednet.isOpen(side) then  -- check its status
-                netOpen = true
-                break
-            end
-        end
-    end
+	for _, side in pairs(rs.getSides()) do		-- for all sides
+		if peripheral.getType(side) == "modem" then	-- find the modem
+			modemSide = side
+			if rednet.isOpen(side) then	-- check its status
+				netOpen = true
+				break
+			end
+		end
+	end
 
-    if not netOpen then  -- if the rednet network is not open
-        if modemSide then  -- and we found a modem, open the rednet network
-            rednet.open(modemSide)
-        else
-            print("No modem found")
-            return false
-        end
-    end
-    return true
+	if not netOpen then	-- if the rednet network is not open
+		if modemSide then	-- and we found a modem, open the rednet network
+			rednet.open(modemSide)
+		else
+			print("No modem found")
+			return false
+		end
+	end
+	return true
 end
 
 -- setLocationFromGPS
@@ -1381,81 +1381,81 @@ end
 --
 
 function setLocationFromGPS()
-  if startGPS() then
-    -- get the current position
-    cachedX, cachedY, cachedZ  = gps.locate(4, false)
-    if not cachedX then
-    	return false
-    end
-    local d = cachedDir or nil
-    cachedDir = nil
+	if startGPS() then
+		-- get the current position
+		cachedX, cachedY, cachedZ	= gps.locate(4, false)
+		if not cachedX then
+			return false
+		end
+		local d = cachedDir or nil
+		cachedDir = nil
 
-    -- determine the current direction
-    for tries = 0, 3 do  -- try to move in one direction
-          if turtle.forward() then
-            local newX, _, newZ = gps.locate(4, false) -- get the new position
-            if not turtle.back() then-- and go back
-            	ghost_forward()--couldn't move backward... need to shuffle the map so we don't screw it up
-            end
+		-- determine the current direction
+		for tries = 0, 3 do	-- try to move in one direction
+			if turtle.forward() then
+				local newX, _, newZ = gps.locate(4, false) -- get the new position
+				if not turtle.back() then-- and go back
+					ghost_forward()--couldn't move backward... need to shuffle the map so we don't screw it up
+				end
 
-            -- deduce the curent direction
-            if newZ < cachedZ then
-              cachedDir = North
-              d = "north"
-            elseif newZ > cachedZ then
-              cachedDir = South
-              d = "south"
-            elseif newX < cachedX then
-              cachedDir = West
-              d = "west"
-            elseif newX > cachedX then
-              cachedDir = East
-              d = "east"
-            end
+				-- deduce the curent direction
+				if newZ < cachedZ then
+					cachedDir = North
+					d = "north"
+				elseif newZ > cachedZ then
+					cachedDir = South
+					d = "south"
+				elseif newX < cachedX then
+					cachedDir = West
+					d = "west"
+				elseif newX > cachedX then
+					cachedDir = East
+					d = "east"
+				end
 
-            -- Cancel out the tries
-            if tries%4 == 3 then
-            	turtle.turnLeft()
-            else
-            	for i = 1,tries do
-            		turtle.turnRight()
-            	end
-            end
+				-- Cancel out the tries
+				if tries%4 == 3 then
+					turtle.turnLeft()
+				else
+					for i = 1,tries do
+						turtle.turnRight()
+					end
+				end
 
-            -- exit the loop
-            break
+				-- exit the loop
+				break
 
-          else -- try in another direction
-            tries = tries + 1
-            turtle.turnLeft()
-          end
-    end
+			else -- try in another direction
+				tries = tries + 1
+				turtle.turnLeft()
+			end
+		end
 
-    if cachedDir == nil then
-      if isLama then--TODO: test this
-      	local x, y, z, d = lama.getPosition()
-      	setDirection_lamaFormat(d)
-	  	print("got direction from lama")
-      else
-      	print("Could not determine direction")
-        return false
-      end
-    end
+		if cachedDir == nil then
+			if isLama then--TODO: test this
+				local x, y, z, d = lama.getPosition()
+				setDirection_lamaFormat(d)
+				print("got direction from lama")
+			else
+				print("Could not determine direction")
+				return false
+			end
+		end
 
 
-    -- Return the current turtle position
-    if isLama then
-      lama.setPosition(cachedX, cachedY, cachedZ, d)
-    end
-    return cachedX, cachedY, cachedZ, cachedDir
-  else
-    print("no GPS signal")
-    if isLama then
-		setLocationFromLAMA()
-    else
-      return false
-    end
-  end
+		-- Return the current turtle position
+		if isLama then
+			lama.setPosition(cachedX, cachedY, cachedZ, d)
+		end
+		return cachedX, cachedY, cachedZ, cachedDir
+	else
+		print("no GPS signal")
+		if isLama then
+			setLocationFromLAMA()
+		else
+			return false
+		end
+	end
 end
 
 ----------------------------------------
@@ -1466,18 +1466,18 @@ end
 --
 function setDirection_lamaFormat(d)
 	if d == "north" then
-      cachedDir = North
-    elseif d == "south" then
-      cachedDir = South
-    elseif d == "east" then
-      cachedDir = East
-    elseif d == "west" then
-      cachedDir = West
-    else
-      print("could not get direction from lama")
-      return false
-    end
-    return true
+		cachedDir = North
+	elseif d == "south" then
+		cachedDir = South
+	elseif d == "east" then
+		cachedDir = East
+	elseif d == "west" then
+		cachedDir = West
+	else
+		print("could not get direction from lama")
+		return false
+	end
+	return true
 end
 
 ----------------------------------------
@@ -1488,13 +1488,13 @@ end
 --
 
 function setLocationFromLAMA()
-  if isLama then
-    cachedX, cachedY, cachedZ, d = lama.getPosition() --last resort if gps fails, get direction from Lama
-    return setDirection_lamaFormat(d)
-  else
-    print("no lama")
-    return false
-  end
+	if isLama then
+		cachedX, cachedY, cachedZ, d = lama.getPosition() --last resort if gps fails, get direction from Lama
+		return setDirection_lamaFormat(d)
+	else
+		print("no lama")
+		return false
+	end
 end
 
 ----------------------------------------
@@ -1505,23 +1505,23 @@ end
 --
 
 function locate()
-  if isLama then
-    local x, y, z, f = lama.getPosition()
-    local d
-    if f == "north" then
-      d = North
-    elseif f == "west" then
-      d = West
-    elseif f == "south" then
-      d = South
-    elseif f == "east" then
-      d = East
-    else
-      return cachedX, cachedY, cachedZ, cachedDir
-    end
-    cachedX, cachedY, cachedZ, cachedDir = x, y, z, d
-    return x, y, z, d
-  else
-    return cachedX, cachedY, cachedZ, cachedDir
-  end
+	if isLama then
+		local x, y, z, f = lama.getPosition()
+		local d
+		if f == "north" then
+			d = North
+		elseif f == "west" then
+			d = West
+		elseif f == "south" then
+			d = South
+		elseif f == "east" then
+			d = East
+		else
+			return cachedX, cachedY, cachedZ, cachedDir
+		end
+		cachedX, cachedY, cachedZ, cachedDir = x, y, z, d
+		return x, y, z, d
+	else
+		return cachedX, cachedY, cachedZ, cachedDir
+	end
 end
