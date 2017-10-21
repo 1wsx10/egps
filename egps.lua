@@ -149,7 +149,7 @@ end
 --
 
 function getBlock(bX, bY, bZ)
-	local idx_block = bX..":"..bY..":"..bZ
+	local idx_block = fmtCoord(bX, bY, bZ)
 	return cachedWorld[idx_block]
 end
 
@@ -162,7 +162,7 @@ end
 --
 
 function getBlockDetail(bX, bY, bZ)
-	local idx_block = bX..":"..bY..":"..bZ
+	local idx_block = fmtCoord(bX, bY, bZ)
 	return cachedWorldDetail[idx_block]
 end
 
@@ -638,7 +638,7 @@ function setExclusion(idx, y, z)
 		z = tonumber(string.match(idx, ":(.*)"))
 	else
 		local x = idx
-		idx = x..":"..y..":"..z
+		idx = fmtCoord(x, y, z)
 	end
 	d = d or 0
 	exclusions[idx] = {x, y, z}
@@ -697,7 +697,7 @@ function getExclusion(idx, y, z)
 		z = tonumber(string.match(idx, ":(.*)"))
 	else
 		local x = idx
-		idx = x..":"..y..":"..z
+		idx = fmtCoord(x, y, z)
 	end
 	if exclusions[idx] ~= nil then
 		x = exclusions[idx][1]
@@ -725,7 +725,7 @@ function delExclusion(idx, y, z)
 		z = tonumber(string.match(idx, ":(.*)"))
 	else
 		local x = idx
-		idx = x..":"..y..":"..z
+		idx = fmtCoord(x, y, z)
 	end
 	exclusions[idx] = nil
 	print("exclusion deleted")
@@ -763,31 +763,31 @@ function detectAll()
 	time.day = os.day()
 	time.time = os.time()
 
-	cachedWorld[cachedX..":"..cachedY..":"..cachedZ] = 0
-	if not cachedWorldDetail[cachedX..":"..cachedY..":"..cachedZ] then cachedWorldDetail[cachedX..":"..cachedY..":"..cachedZ] = {} end
-	cachedWorldDetail[cachedX..":"..cachedY..":"..cachedZ].block = {false, "no block to inspect"}
-	cachedWorldDetail[cachedX..":"..cachedY..":"..cachedZ].time = {time}
+	cachedWorld[fmtCoord(cachedX, cachedY, cachedZ)] = 0
+	if not cachedWorldDetail[fmtCoord(cachedX, cachedY, cachedZ)] then cachedWorldDetail[fmtCoord(cachedX, cachedY, cachedZ)] = {} end
+	cachedWorldDetail[fmtCoord(cachedX, cachedY, cachedZ)].block = {false, "no block to inspect"}
+	cachedWorldDetail[fmtCoord(cachedX, cachedY, cachedZ)].time = {time}
 
 	block = 0
 	if turtle.detect()			then block = 1 end
-	cachedWorld[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])] = block
-	if not cachedWorldDetail[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])] then cachedWorldDetail[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])] = {} end
-	cachedWorldDetail[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])].block = {turtle.inspect()}
-	cachedWorldDetail[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])].time = {time}
+	cachedWorld[fmtCoord((cachedX + F[1]), (cachedY + F[2]), (cachedZ + F[3]))] = block
+	if not cachedWorldDetail[fmtCoord((cachedX + F[1]), (cachedY + F[2]), (cachedZ + F[3]))] then cachedWorldDetail[fmtCoord((cachedX + F[1]), (cachedY + F[2]), (cachedZ + F[3]))] = {} end
+	cachedWorldDetail[fmtCoord((cachedX + F[1]), (cachedY + F[2]), (cachedZ + F[3]))].block = {turtle.inspect()}
+	cachedWorldDetail[fmtCoord((cachedX + F[1]), (cachedY + F[2]), (cachedZ + F[3]))].time = {time}
 
 	block = 0
 	if turtle.detectUp()		then block = 1 end
-	cachedWorld[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])] = block
-	if not cachedWorldDetail[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])] then cachedWorldDetail[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])] = {} end
-	cachedWorldDetail[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])].block = {turtle.inspectUp()}
-	cachedWorldDetail[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])].time = {time}
+	cachedWorld[fmtCoord((cachedX + U[1]), (cachedY + U[2]), (cachedZ + U[3]))] = block
+	if not cachedWorldDetail[fmtCoord((cachedX + U[1]), (cachedY + U[2]), (cachedZ + U[3]))] then cachedWorldDetail[fmtCoord((cachedX + U[1]), (cachedY + U[2]), (cachedZ + U[3]))] = {} end
+	cachedWorldDetail[fmtCoord((cachedX + U[1]), (cachedY + U[2]), (cachedZ + U[3]))].block = {turtle.inspectUp()}
+	cachedWorldDetail[fmtCoord((cachedX + U[1]), (cachedY + U[2]), (cachedZ + U[3]))].time = {time}
 
 	block = 0
 	if turtle.detectDown()	then block = 1 end
-	cachedWorld[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])] = block
-	if not cachedWorldDetail[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])] then cachedWorldDetail[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])] = {} end
-	cachedWorldDetail[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])].block = {turtle.inspectDown()}
-	cachedWorldDetail[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])].time = {time}
+	cachedWorld[fmtCoord((cachedX + D[1]), (cachedY + D[2]), (cachedZ + D[3]))] = block
+	if not cachedWorldDetail[fmtCoord((cachedX + D[1]), (cachedY + D[2]), (cachedZ + D[3]))] then cachedWorldDetail[fmtCoord((cachedX + D[1]), (cachedY + D[2]), (cachedZ + D[3]))] = {} end
+	cachedWorldDetail[fmtCoord((cachedX + D[1]), (cachedY + D[2]), (cachedZ + D[3]))].block = {turtle.inspectDown()}
+	cachedWorldDetail[fmtCoord((cachedX + D[1]), (cachedY + D[2]), (cachedZ + D[3]))].time = {time}
 end
 
 -- Legacy detectAll --------------only writes 0... fucking weird
@@ -795,10 +795,10 @@ end
 function detectAll()
 local F, U, D = deltas[cachedDir], deltas[Up], deltas[Down]
 
-cachedWorld[cachedX..":"..cachedY..":"..cachedZ] = 0
-if not turtle.detect()		 then cachedWorld[(cachedX + F[1])..":"..(cachedY + F[2])..":"..(cachedZ + F[3])] = 0 end
-if not turtle.detectUp()	 then cachedWorld[(cachedX + U[1])..":"..(cachedY + U[2])..":"..(cachedZ + U[3])] = 0 end
-if not turtle.detectDown() then cachedWorld[(cachedX + D[1])..":"..(cachedY + D[2])..":"..(cachedZ + D[3])] = 0 end
+cachedWorld[fmtCoord(cachedX, cachedY, cachedZ)] = 0
+if not turtle.detect()		 then cachedWorld[fmtCoord((cachedX + F[1]), (cachedY + F[2]), (cachedZ + F[3]))] = 0 end
+if not turtle.detectUp()	 then cachedWorld[fmtCoord((cachedX + U[1]), (cachedY + U[2]), (cachedZ + U[3]))] = 0 end
+if not turtle.detectDown() then cachedWorld[fmtCoord((cachedX + D[1]), (cachedY + D[2]), (cachedZ + D[3]))] = 0 end
 end--]]
 
 ----------------------------------------
@@ -814,7 +814,7 @@ function forward()
 	end
 	local D = deltas[cachedDir]--if north, D = {0, 0, -1}
 	local x, y, z = cachedX + D[1], cachedY + D[2], cachedZ + D[3]--adds corisponding delta to direction
-	local idx_pos = x..":"..y..":"..z
+	local idx_pos = fmtCoord(x, y, z)
 
 	if turtle.forward() then
 		cachedX, cachedY, cachedZ = x, y, z
@@ -839,7 +839,7 @@ function ghost_forward()
 	end
 	local D = deltas[cachedDir]--if north, D = {0, 0, -1}
 	local x, y, z = cachedX + D[1], cachedY + D[2], cachedZ + D[3]--adds corisponding delta to direction
-	local idx_pos = x..":"..y..":"..z
+	local idx_pos = fmtCoord(x, y, z)
 
 	if true then
 		cachedX, cachedY, cachedZ = x, y, z
@@ -864,7 +864,7 @@ function back()
 	end
 	local D = deltas[cachedDir]
 	local x, y, z = cachedX - D[1], cachedY - D[2], cachedZ - D[3]
-	local idx_pos = x..":"..y..":"..z
+	local idx_pos = fmtCoord(x, y, z)
 
 	if turtle.back() then
 		cachedX, cachedY, cachedZ = x, y, z
@@ -889,7 +889,7 @@ function ghost_back()
 	end
 	local D = deltas[cachedDir]
 	local x, y, z = cachedX - D[1], cachedY - D[2], cachedZ - D[3]
-	local idx_pos = x..":"..y..":"..z
+	local idx_pos = fmtCoord(x, y, z)
 
 	if true then
 		cachedX, cachedY, cachedZ = x, y, z
@@ -914,7 +914,7 @@ function up()
 	end
 	local D = deltas[Up]
 	local x, y, z = cachedX + D[1], cachedY + D[2], cachedZ + D[3]
-	local idx_pos = x..":"..y..":"..z
+	local idx_pos = fmtCoord(x, y, z)
 
 	if turtle.up() then
 		cachedX, cachedY, cachedZ = x, y, z
@@ -939,7 +939,7 @@ function down()
 	end
 	local D = deltas[Down]
 	local x, y, z = cachedX + D[1], cachedY + D[2], cachedZ + D[3]
-	local idx_pos = x..":"..y..":"..z
+	local idx_pos = fmtCoord(x, y, z)
 
 	if turtle.down() then
 		cachedX, cachedY, cachedZ = x, y, z
@@ -1064,8 +1064,8 @@ end
 
 local function a_star(x1, y1, z1, x2, y2, z2, discover, priority)
 	discover = discover or 1
-	local start, idx_start = {x1, y1, z1}, x1..":"..y1..":"..z1
-	local goal,	idx_goal	= {x2, y2, z2}, x2..":"..y2..":"..z2
+	local start, idx_start = {x1, y1, z1}, fmtCoord(x1, y1, z1)
+	local goal,	idx_goal	= {x2, y2, z2}, fmtCoord(x2, y2, z2)
 	priority = priority or false
 
 	if exclusions == nil then
@@ -1110,7 +1110,7 @@ local function a_star(x1, y1, z1, x2, y2, z2, discover, priority)
 			for dir = 0, 5 do -- for all direction find the neighbor of the current position, put them on the openset
 				local D = deltas[dir]
 				local x4, y4, z4 = x3 + D[1], y3 + D[2], z3 + D[3]
-				local neighbor, idx_neighbor = {x4, y4, z4}, x4..":"..y4..":"..z4
+				local neighbor, idx_neighbor = {x4, y4, z4}, fmtCoord(x4, y4, z4)
 				if (exclusions[idx_neighbor] == nil or priority) and (cachedWorld[idx_neighbor] or 0) == 0 then -- if its free or unknow and not on exclusion list
 					if closedset[idx_neighbor] == nil then -- if not closed
 						local tentative_g_score = g_score[idx_current] + ((cachedWorld[idx_neighbor] == nil) and discover or 1)
@@ -1224,7 +1224,7 @@ function explore(_range, limitY, drawAMap)--TODO: flag to explore previously exp
 	for dx = -_range, _range do
 		for dy = -yVal, yVal do
 			for dz = -_range, _range do
-				idx = ox+dx..":"..oy+dy..":"..oz+dz
+				idx = fmtCoord(ox+dx, oy+dy, oz+dz)
 				toCheck[idx] = {ox+dx, oy+dy, oz+dz}--set up the toCheck table
 				count = count + 1
 			end
@@ -1298,7 +1298,7 @@ function discoverWorld(_range)
 		for dx = -r, r do
 			for dy = -r, r do
 				for dz = -r, r do
-					local idx_goal = (x+dx)..":"..(y+dy)..":"..(z+dz)
+					local idx_goal = fmtCoord((x+dx), (y+dy), (z+dz))
 					i = i + 1
 					term.setCursorPos(1, 1)
 					term.clear()--TODO: test this
