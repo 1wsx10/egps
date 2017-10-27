@@ -1029,6 +1029,18 @@ function clearWorld()
 end
 
 ----------------------------------------
+-- create_path
+--
+-- function: create a path to zig-zag through the area
+-- input: table of zones
+-- return: List of coordinates, to be used with egps.moveTo()
+--
+
+function create_path(zones, order)
+
+end
+
+----------------------------------------
 -- heuristic_cost_estimate
 --
 -- function: A* heuristic
