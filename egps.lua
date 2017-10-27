@@ -1029,15 +1029,79 @@ function clearWorld()
 end
 
 ----------------------------------------
+-- createZone
+--
+-- function: create a cuboid
+-- input: 2 opposite corners (x, y, z, x2, y2, z2)
+-- option: boolean to include the zone
+--
+
+function createZone(x, y, z, x2, y2, z2)
+	local temp, temp2
+	temp, temp2 = x, x2
+	x = math.min(temp, temp2)
+	x2 = math.max(temp, temp2)
+	temp, temp2 = y, y2
+	y = math.min(temp, temp2)
+	y2 = math.max(temp, temp2)
+	temp, temp2 = z, z2
+	z = math.min(temp, temp2)
+	z2 = math.max(temp, temp2)
+
+	local ret = {}
+	ret[1] = {}
+	ret[2] = {}
+
+	ret[1].x = x
+	ret[1].y = y
+	ret[1].z = z
+	ret[2].x2 = x2
+	ret[2].y2 = y2
+	ret[2].z2 = z2
+
+	return ret
+end
+
+----------------------------------------
 -- create_path
 --
 -- function: create a path to zig-zag through the area
--- input: table of zones
+-- zones: table of zones
+--		-make a zone with createZone(x,y,z,x2,y2,z2)
+-- order: the order with which to execute the moves, x,y,z or y,x,-z or z,y,x etc.
 -- return: List of coordinates, to be used with egps.moveTo()
+--
+-- example, dig down in 2 different areas:
+--	local zones = {}
+--	zones[1] = egps.createZone(0,0,0, 3,5,3)
+--	zones[2] = egps.createZone(6,4,9, 6,5,6)
+--	local path = egps.create_path(zones, "x,-y,z")
+--	for idx, coord in pairs(path) do
+--		egps.moveTo(unpack(coord))
+--		if v[4] == egps.Down then
+--			turtle.digDown()
+--		else
+--			turtle.dig()
+--		end
+--	end
 --
 
 function create_path(zones, order)
+	local path = {}
 
+	--add it all to path
+	for k, v in pairs(zones) do
+		for i = v[1].x, v[2].x do
+			for j = v[1].y, v[2].y do
+				for j = v[1].z, v[2].z do
+					path[count] = {i, j, k, 0}
+				end
+			end
+		end
+	end
+
+	--sort
+	--set direction
 end
 
 ----------------------------------------
@@ -1152,12 +1216,11 @@ end
 -- moveTo
 --
 -- function: Move the turtle to the choosen coordinates in the world
--- input: X, Y, Z and direction of the goal
+-- input: X, Y, Z and (optional: direction of the goal)
 -- return: boolean "success"
 --
 
-function moveTo(_targetX, _targetY, _targetZ, _targetDir, changeDir, discover)
-	changeDir = changeDir or false
+function moveTo(_targetX, _targetY, _targetZ, _targetDir, discover)
 	while cachedX ~= _targetX or cachedY ~= _targetY or cachedZ ~= _targetZ do
 		local path = a_star(cachedX, cachedY, cachedZ, _targetX, _targetY, _targetZ, discover)
 		if #path == 0 then
@@ -1181,7 +1244,7 @@ function moveTo(_targetX, _targetY, _targetZ, _targetDir, changeDir, discover)
 			end
 		end
 	end
-	if changeDir then
+	if _targetDir then
 		turnTo(_targetDir)
 	end
 	return true
