@@ -1029,6 +1029,18 @@ function clearWorld()
 end
 
 ----------------------------------------
+-- compare_path_values
+--
+-- comparison function, used for sorting with the create_path method
+--
+-- function: return weather a should occur before b
+--
+
+local compare_path_values_order
+local function compare_path_values(a, b)
+end
+
+----------------------------------------
 -- createZone
 --
 -- function: create a cuboid
@@ -1100,7 +1112,10 @@ function create_path(zones, order)
 		end
 	end
 
-	--sort
+	--sort, using the table.sort function for lua
+	compare_path_values_order = order
+	table.sort(path, compare_path_values)
+
 	--set direction
 end
 
