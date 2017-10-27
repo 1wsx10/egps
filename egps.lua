@@ -1029,6 +1029,17 @@ function clearWorld()
 end
 
 ----------------------------------------
+-- get_order
+--
+-- comparison function, used for sorting with the create_path method
+--
+-- function: return weather a should occur before b
+--
+
+local function get_order(order)
+end
+
+----------------------------------------
 -- compare_path_values
 --
 -- comparison function, used for sorting with the create_path method
@@ -1036,8 +1047,47 @@ end
 -- function: return weather a should occur before b
 --
 
-local compare_path_values_order
+local compare_path_values_order = {}
+local compare_path_values_startpos = {}
 local function compare_path_values(a, b)
+	local first = order[1].v
+	local second = order[2].v
+	local third = order[3].v
+
+	local is_positive = order[1].p
+	local curr = first
+	local nxt = second
+
+	while a[curr] == b[curr] do
+		if curr == first then
+			is_positive = order[2].p
+			curr = second
+			nxt = third
+		end
+		if curr == second then
+			is_positive = order[3].p
+			curr = third
+			nxt = -1
+		end
+		if curr == third then
+			--they are the same coordinate, this should not happen but return anyway
+			return true
+		end
+	end
+
+	if is_positive then
+		if nxt == -1 or (a[nxt] - compare_path_values_startpos[nxt]) % 2 == 0 then
+			return a[curr] < b[curr]
+		else
+			return a[curr] > b[curr]
+		end
+	else
+		if nxt == -1 or (a[nxt] - compare_path_values_startpos[nxt]) % 2 == 0 then
+			return a[curr] > b[curr]
+		else
+			return a[curr] < b[curr]
+		end
+	end
 end
 
 ----------------------------------------
@@ -1084,25 +1134,81 @@ end
 -- return: List of coordinates, to be used with egps.moveTo()
 --
 -- example, dig down in 2 different areas:
---	local zones = {}
---	zones[1] = egps.createZone(0,0,0, 3,5,3)
---	zones[2] = egps.createZone(6,4,9, 6,5,6)
---	local path = egps.create_path(zones, "x,-y,z")
---	for idx, coord in pairs(path) do
---		egps.moveTo(unpack(coord))
---		if v[4] == egps.Down then
---			turtle.digDown()
---		else
---			turtle.dig()
---		end
---	end
+	local zones = {}
+	zones[1] = egps.createZone(0,0,0, 3,5,3)
+	zones[2] = egps.createZone(6,4,9, 6,5,6)
+	local path = egps.create_path(zones, "x,z,-y")
+	for idx, coord in pairs(path) do
+		egps.moveTo(unpack(coord))
+		if v[4] == egps.Down then
+			turtle.digDown()
+		else
+			turtle.dig()
+		end
+	end
 --
 
 function create_path(zones, order)
+
+	--setup order for sorting
+	local set_order = function(table, pattern, order)
+		local substring = string.match(order, pattern)
+		local pos1, pos2 = string.find(substring, "-")
+		table.p = not pos1
+		if table.p then
+			table.v = substring
+		else
+			table.v = string.sub(substring, pos2)
+		end
+	end
+
+	--setup order
+	compare_path_values_order[1] = {}
+	set_order(compare_path_values_order[1], "(.*),", order)
+	compare_path_values_order[2] = {}
+	set_order(compare_path_values_order[2], ",(.*),", order)
+	compare_path_values_order[3] = {}
+	set_order(compare_path_values_order[3], ",(.*)", order)
+
+	local is_x_positive
+	local is_y_positive
+	local is_z_positive
+	if compare_path_values_order[1] == "x" then
+		is_x_positive = compare_path_values_order[1].p
+	elseif compare_path_values_order[1] == "y" then
+		is_y_positive = compare_path_values_order[1].p
+	elseif compare_path_values_order[1] == "z" then
+		is_z_positive = compare_path_values_order[1].p
+	else
+		--'compare path values order' is not setup correctly
+		error("compare_path_values[1] is wrong: ".. compare_path_values_order[1])
+	end
+	if compare_path_values_order[2] == "x" then
+		is_x_positive = compare_path_values_order[1].p
+	elseif compare_path_values_order[2] == "y" then
+		is_y_positive = compare_path_values_order[1].p
+	elseif compare_path_values_order[2] == "z" then
+		is_z_positive = compare_path_values_order[1].p
+	else
+		--'compare path values order' is not setup correctly
+		error("compare_path_values[2] is wrong: ".. compare_path_values_order[2])
+	end
+	if compare_path_values_order[3] == "x" then
+		is_x_positive = compare_path_values_order[1].p
+	elseif compare_path_values_order[3] == "y" then
+		is_y_positive = compare_path_values_order[1].p
+	elseif compare_path_values_order[3] == "z" then
+		is_z_positive = compare_path_values_order[1].p
+	else
+		--'compare path values order' is not setup correctly
+		error("compare_path_values[3] is wrong: ".. compare_path_values_order[3])
+	end
+
+	--setup the path to be sorted
 	local path = {}
 
-	--add it all to path
 	for k, v in pairs(zones) do
+		--add each coordinate to the path
 		for i = v[1].x, v[2].x do
 			for j = v[1].y, v[2].y do
 				for j = v[1].z, v[2].z do
@@ -1110,10 +1216,26 @@ function create_path(zones, order)
 				end
 			end
 		end
+
+		--setup startpos
+		if is_x_positive then
+			compare_path_values_startpos[1] = math.min(compare_path_values_startpos[1], v[1])
+		else
+			compare_path_values_startpos[1] = math.max(compare_path_values_startpos[1], v[1])
+		end
+		if is_y_positive then
+			compare_path_values_startpos[2] = math.min(compare_path_values_startpos[2], v[2])
+		else
+			compare_path_values_startpos[2] = math.max(compare_path_values_startpos[2], v[2])
+		end
+		if is_z_positive then
+			compare_path_values_startpos[3] = math.min(compare_path_values_startpos[3], v[3])
+		else
+			compare_path_values_startpos[3] = math.max(compare_path_values_startpos[3], v[3])
+		end
 	end
 
 	--sort, using the table.sort function for lua
-	compare_path_values_order = order
 	table.sort(path, compare_path_values)
 
 	--set direction
