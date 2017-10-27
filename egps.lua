@@ -53,10 +53,15 @@ local cachedX, cachedY, cachedZ, cachedDir
 
 -- Directions
 North, West, South, East, Up, Down = 0, 1, 2, 3, 4, 5
-local shortNames = {[North] = "N", [West] = "W", [South] = "S",
+shortNames = {[North] = "N", [West] = "W", [South] = "S",
 [East] = "E", [Up] = "U", [Down] = "D" }
-local deltas = {[North] = {0, 0, -1}, [West] = {-1, 0, 0}, [South] = {0, 0, 1},
+deltas = {[North] = {0, 0, -1}, [West] = {-1, 0, 0}, [South] = {0, 0, 1},
 [East] = {1, 0, 0}, [Up] = {0, 1, 0}, [Down] = {0, -1, 0}}
+--north = -Z
+--south = +Z
+--west = -X
+--east = +X
+
 
 -- cache world geometry
 cachedWorld = {}
@@ -1418,16 +1423,16 @@ function setLocationFromGPS()
 				end
 
 				-- deduce the curent direction
-				if newZ < cachedZ then
+				if newZ < cachedZ then--north = -Z
 					cachedDir = North
 					d = "north"
-				elseif newZ > cachedZ then
+				elseif newZ > cachedZ then--south = +Z
 					cachedDir = South
 					d = "south"
-				elseif newX < cachedX then
+				elseif newX < cachedX then--west = -X
 					cachedDir = West
 					d = "west"
-				elseif newX > cachedX then
+				elseif newX > cachedX then--east = +X
 					cachedDir = East
 					d = "east"
 				end
