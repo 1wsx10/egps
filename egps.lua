@@ -1039,9 +1039,9 @@ end
 local compare_path_values_order = {}
 local compare_path_values_startpos = {}
 local function compare_path_values(a, b)
-	local first = compare_path_values_order[1].v
-	local second = compare_path_values_order[2].v
-	local third = compare_path_values_order[3].v
+	local first = compare_path_values_order[1].n
+	local second = compare_path_values_order[2].n
+	local third = compare_path_values_order[3].n
 
 	local is_positive = compare_path_values_order[1].p
 	local curr = first
@@ -1052,31 +1052,41 @@ local function compare_path_values(a, b)
 			is_positive = compare_path_values_order[2].p
 			curr = second
 			nxt = third
-		end
-		if curr == second then
+		elseif curr == second then
 			is_positive = compare_path_values_order[3].p
 			curr = third
 			nxt = -1
-		end
-		if curr == third then
+		elseif curr == third then
 			--they are the same coordinate, this should not happen but return anyway
 			return true
 		end
 	end
 
+	if curr == first then
+		--print("comparing First! ".. curr .. " " .. a[curr] .. " " .. b[curr])
+	elseif curr == second then
+		--print("comparing Second! ".. curr .. " " .. a[curr] .. " " .. b[curr])
+	elseif curr == third then
+		--print("comparing Third! ".. curr .. " " .. a[curr] .. " " .. b[curr])
+	else
+		error("comparing broke")
+	end
+
+	return a[curr] < b[curr]
+--[[
 	if is_positive then
 		if nxt == -1 or (a[nxt] - compare_path_values_startpos[nxt]) % 2 == 0 then
 			return a[curr] < b[curr]
 		else
-			return a[curr] > b[curr]
+			return a[curr] >= b[curr]
 		end
 	else
 		if nxt == -1 or (a[nxt] - compare_path_values_startpos[nxt]) % 2 == 0 then
-			return a[curr] > b[curr]
+			return a[curr] >= b[curr]
 		else
 			return a[curr] < b[curr]
 		end
-	end
+	end]]--
 end
 
 ----------------------------------------
@@ -1147,10 +1157,10 @@ function create_path(zones, order)
 		table.p = not pos1
 		if table.p then
 			table.v = substring
-			print("("..table.v..") not neg, using this")
+			-- print("("..table.v..") not neg, using this")
 		else
 			table.v = string.sub(substring, pos2+1)
-			print("("..table.v..") finding substring in '"..substring.."' and getting char at "..pos2+1)
+			-- print("("..table.v..") finding substring in '"..substring.."' and getting char at "..pos2+1)
 		end
 	end
 
@@ -1167,9 +1177,17 @@ function create_path(zones, order)
 	coordmap[compare_path_values_order[2].v] = 2
 	coordmap[compare_path_values_order[3].v] = 3
 
+	compare_path_values_order[coordmap.x].n = 1
+	compare_path_values_order[coordmap.y].n = 2
+	compare_path_values_order[coordmap.z].n = 3
+
 	--print("coordmap (x): "..compare_path_values_order[coordmap.x].v)
 	--print("coordmap (y): "..compare_path_values_order[coordmap.y].v)
 	--print("coordmap (z): "..compare_path_values_order[coordmap.z].v)
+
+	-- print("order(1): "..compare_path_values_order[1].v.." "..compare_path_values_order[1].n)
+	-- print("order(2): "..compare_path_values_order[2].v.." "..compare_path_values_order[2].n)
+	-- print("order(3): "..compare_path_values_order[3].v.." "..compare_path_values_order[3].n)
 
 	local is_x_positive
 	local is_y_positive
@@ -1185,7 +1203,7 @@ function create_path(zones, order)
 	local count = 0
 	for k, v in pairs(zones) do
 		--add each coordinate to the path
-		print(string.format("x:%d %d y:%d %d z:%d %d", v[1].x, v[2].x, v[1].y, v[2].y, v[1].z, v[2].z))
+		-- print(string.format("x:%d %d y:%d %d z:%d %d", v[1].x, v[2].x, v[1].y, v[2].y, v[1].z, v[2].z))
 		for i = v[1].x, v[2].x do
 			for j = v[1].y, v[2].y do
 				for k = v[1].z, v[2].z do
@@ -1223,9 +1241,9 @@ function create_path(zones, order)
 	-- print("startpos for z: "..compare_path_values_startpos[coordmap.z])
 
 	--sort, using the table.sort function for lua
-	print("pos "..path[1][1].." "..path[1][2].." "..path[1][3])
+	--print("pos "..path[1][1].." "..path[1][2].." "..path[1][3])
 	table.sort(path, compare_path_values)
-	print("pos "..path[1][1].." "..path[1][2].." "..path[1][3])
+	--print("pos "..path[1][1].." "..path[1][2].." "..path[1][3])
 
 	--set direction TODO
 
