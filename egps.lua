@@ -100,9 +100,18 @@ end
 -- 		table["x:y:z"].time.time = float
 --
 function fmtCoord(x, y, z)
-	if not x then return nil end
-	if not y then return nil end
-	if not z then return nil end
+	if not x then
+		print("egps needs to know location")
+		return nil
+	end
+	if not y then
+		print("egps needs to know location")
+		return nil
+	end
+	if not z then
+		print("egps needs to know location")
+		return nil
+	end
 	return string.format("%d:%d:%d", x, y, z)
 end
 
@@ -762,34 +771,34 @@ end
 
 function detectAll()
 	local F, U, D = deltas[cachedDir], deltas[Up], deltas[Down]
-	local block
+	local isBlock
 
 	local time = {}
 	time.day = os.day()
 	time.time = os.time()
 
-	cachedWorld[fmtCoord(cachedX, cachedY, cachedZ)] = 0
+	cachedWorld[fmtCoord(cachedX, cachedY, cachedZ)] = false
 	if not cachedWorldDetail[fmtCoord(cachedX, cachedY, cachedZ)] then cachedWorldDetail[fmtCoord(cachedX, cachedY, cachedZ)] = {} end
-	cachedWorldDetail[fmtCoord(cachedX, cachedY, cachedZ)].block = {false, "no block to inspect"}
+	cachedWorldDetail[fmtCoord(cachedX, cachedY, cachedZ)].isBlock = {false, "no block to inspect"}
 	cachedWorldDetail[fmtCoord(cachedX, cachedY, cachedZ)].time = {time}
 
-	block = 0
-	if turtle.detect()			then block = 1 end
-	cachedWorld[fmtCoord((cachedX + F[1]), (cachedY + F[2]), (cachedZ + F[3]))] = block
+	isBlock = false
+	if turtle.detect()			then isBlock = true end
+	cachedWorld[fmtCoord((cachedX + F[1]), (cachedY + F[2]), (cachedZ + F[3]))] = isBlock
 	if not cachedWorldDetail[fmtCoord((cachedX + F[1]), (cachedY + F[2]), (cachedZ + F[3]))] then cachedWorldDetail[fmtCoord((cachedX + F[1]), (cachedY + F[2]), (cachedZ + F[3]))] = {} end
-	cachedWorldDetail[fmtCoord((cachedX + F[1]), (cachedY + F[2]), (cachedZ + F[3]))].block = {turtle.inspect()}
+	cachedWorldDetail[fmtCoord((cachedX + F[1]), (cachedY + F[2]), (cachedZ + F[3]))].isBlock = {turtle.inspect()}
 	cachedWorldDetail[fmtCoord((cachedX + F[1]), (cachedY + F[2]), (cachedZ + F[3]))].time = {time}
 
-	block = 0
-	if turtle.detectUp()		then block = 1 end
-	cachedWorld[fmtCoord((cachedX + U[1]), (cachedY + U[2]), (cachedZ + U[3]))] = block
+	isBlock = false
+	if turtle.detectUp()		then isBlock = true end
+	cachedWorld[fmtCoord((cachedX + U[1]), (cachedY + U[2]), (cachedZ + U[3]))] = isBlock
 	if not cachedWorldDetail[fmtCoord((cachedX + U[1]), (cachedY + U[2]), (cachedZ + U[3]))] then cachedWorldDetail[fmtCoord((cachedX + U[1]), (cachedY + U[2]), (cachedZ + U[3]))] = {} end
-	cachedWorldDetail[fmtCoord((cachedX + U[1]), (cachedY + U[2]), (cachedZ + U[3]))].block = {turtle.inspectUp()}
+	cachedWorldDetail[fmtCoord((cachedX + U[1]), (cachedY + U[2]), (cachedZ + U[3]))].isBlock = {turtle.inspectUp()}
 	cachedWorldDetail[fmtCoord((cachedX + U[1]), (cachedY + U[2]), (cachedZ + U[3]))].time = {time}
 
-	block = 0
-	if turtle.detectDown()	then block = 1 end
-	cachedWorld[fmtCoord((cachedX + D[1]), (cachedY + D[2]), (cachedZ + D[3]))] = block
+	isBlock = false
+	if turtle.detectDown()	then isBlock = true end
+	cachedWorld[fmtCoord((cachedX + D[1]), (cachedY + D[2]), (cachedZ + D[3]))] = isBlock
 	if not cachedWorldDetail[fmtCoord((cachedX + D[1]), (cachedY + D[2]), (cachedZ + D[3]))] then cachedWorldDetail[fmtCoord((cachedX + D[1]), (cachedY + D[2]), (cachedZ + D[3]))] = {} end
 	cachedWorldDetail[fmtCoord((cachedX + D[1]), (cachedY + D[2]), (cachedZ + D[3]))].block = {turtle.inspectDown()}
 	cachedWorldDetail[fmtCoord((cachedX + D[1]), (cachedY + D[2]), (cachedZ + D[3]))].time = {time}
@@ -1302,7 +1311,6 @@ local function a_star(x1, y1, z1, x2, y2, z2, discover, priority)
 		print(z2)
 		error("a_star end coordinates nil")
 	end
-	discover = discover or 1
 	local start, idx_start = {x1, y1, z1}, fmtCoord(x1, y1, z1)
 	local goal,	idx_goal	= {x2, y2, z2}, fmtCoord(x2, y2, z2)
 	priority = priority or false
@@ -1364,6 +1372,7 @@ local function a_star(x1, y1, z1, x2, y2, z2, discover, priority)
 					end
 				end
 			end
+			--os.sleep(0)
 		end
 	end
 	print("no path found")
@@ -1459,7 +1468,7 @@ function explore(_range, limitY, drawAMap)--TODO: flag to explore previously exp
 	local dist
 	local skip
 	local yVal = _range
-	drawMap = drawMap or false
+	drawAMap = drawAMap or false
 	limitY = limitY or false
 
 	if limitY then
