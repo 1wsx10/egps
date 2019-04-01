@@ -1388,6 +1388,14 @@ end
 --
 
 function moveTo(_targetX, _targetY, _targetZ, _targetDir, discover)
+	if(type(_targetX) == "string") then
+		_targetX,_targetY,_targetZ,_targetD = egps.getWaypoint(_targetX);
+
+		if(_targetX == nil) then
+			return false
+		end
+	end
+
 	local tries = 1
 	local max_tries = 20
 	while tries < max_tries and (cachedX ~= _targetX or cachedY ~= _targetY or cachedZ ~= _targetZ) do
