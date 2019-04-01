@@ -782,22 +782,19 @@ function detectAll()
 	cachedWorldDetail[fmtCoord(cachedX, cachedY, cachedZ)].isBlock = {false, "no block to inspect"}
 	cachedWorldDetail[fmtCoord(cachedX, cachedY, cachedZ)].time = {time}
 
-	isBlock = false
-	if turtle.detect()			then isBlock = true end
+	isBlock = turtle.detect()
 	cachedWorld[fmtCoord((cachedX + F[1]), (cachedY + F[2]), (cachedZ + F[3]))] = isBlock
 	if not cachedWorldDetail[fmtCoord((cachedX + F[1]), (cachedY + F[2]), (cachedZ + F[3]))] then cachedWorldDetail[fmtCoord((cachedX + F[1]), (cachedY + F[2]), (cachedZ + F[3]))] = {} end
 	cachedWorldDetail[fmtCoord((cachedX + F[1]), (cachedY + F[2]), (cachedZ + F[3]))].isBlock = {turtle.inspect()}
 	cachedWorldDetail[fmtCoord((cachedX + F[1]), (cachedY + F[2]), (cachedZ + F[3]))].time = {time}
 
-	isBlock = false
-	if turtle.detectUp()		then isBlock = true end
+	isBlock = turtle.detectUp()
 	cachedWorld[fmtCoord((cachedX + U[1]), (cachedY + U[2]), (cachedZ + U[3]))] = isBlock
 	if not cachedWorldDetail[fmtCoord((cachedX + U[1]), (cachedY + U[2]), (cachedZ + U[3]))] then cachedWorldDetail[fmtCoord((cachedX + U[1]), (cachedY + U[2]), (cachedZ + U[3]))] = {} end
 	cachedWorldDetail[fmtCoord((cachedX + U[1]), (cachedY + U[2]), (cachedZ + U[3]))].isBlock = {turtle.inspectUp()}
 	cachedWorldDetail[fmtCoord((cachedX + U[1]), (cachedY + U[2]), (cachedZ + U[3]))].time = {time}
 
-	isBlock = false
-	if turtle.detectDown()	then isBlock = true end
+	isBlock = turtle.detectDown()
 	cachedWorld[fmtCoord((cachedX + D[1]), (cachedY + D[2]), (cachedZ + D[3]))] = isBlock
 	if not cachedWorldDetail[fmtCoord((cachedX + D[1]), (cachedY + D[2]), (cachedZ + D[3]))] then cachedWorldDetail[fmtCoord((cachedX + D[1]), (cachedY + D[2]), (cachedZ + D[3]))] = {} end
 	cachedWorldDetail[fmtCoord((cachedX + D[1]), (cachedY + D[2]), (cachedZ + D[3]))].block = {turtle.inspectDown()}
@@ -824,21 +821,25 @@ end--]]
 
 function forward()
 	if not cachedX then
-		return turtle.forward()
+		return oldforward()
 	end
 	local D = deltas[cachedDir]--if north, D = {0, 0, -1}
 	local x, y, z = cachedX + D[1], cachedY + D[2], cachedZ + D[3]--adds corisponding delta to direction
 	local idx_pos = fmtCoord(x, y, z)
 
-	if turtle.forward() then
+	move_return = oldforward()
+	if move_return then
 		cachedX, cachedY, cachedZ = x, y, z
 		detectAll()
-		return true
+		return move_return
 	else
-		cachedWorld[idx_pos] = (turtle.detect() and 1 or 0.5)
-		return false
+		detectAll()
+		return move_return
 	end
 end
+
+oldforward = turtle.forward
+turtle.forward = forward
 
 ----------------------------------------
 -- ghost_forward
@@ -859,9 +860,6 @@ function ghost_forward()
 		cachedX, cachedY, cachedZ = x, y, z
 		detectAll()
 		return true
-	else
-		cachedWorld[idx_pos] = (turtle.detect() and 1 or 0.5)
-		return false
 	end
 end
 
@@ -874,21 +872,25 @@ end
 
 function back()
 	if not cachedX then
-		return turtle.back()
+		return oldback()
 	end
 	local D = deltas[cachedDir]
 	local x, y, z = cachedX - D[1], cachedY - D[2], cachedZ - D[3]
 	local idx_pos = fmtCoord(x, y, z)
 
-	if turtle.back() then
+	move_return = oldback()
+	if move_return then
 		cachedX, cachedY, cachedZ = x, y, z
 		detectAll()
-		return true
+		return move_return
 	else
-		cachedWorld[idx_pos] = 0.5
-		return false
+		cachedWorld[idx_pos] = true
+		return move_return
 	end
 end
+
+oldback = turtle.back
+turtle.back = back
 
 ----------------------------------------
 -- ghost_back
@@ -909,9 +911,6 @@ function ghost_back()
 		cachedX, cachedY, cachedZ = x, y, z
 		detectAll()
 		return true
-	else
-		cachedWorld[idx_pos] = 0.5
-		return false
 	end
 end
 
@@ -924,21 +923,25 @@ end
 
 function up()
 	if not cachedX then
-		return turtle.up()
+		return oldup()
 	end
 	local D = deltas[Up]
 	local x, y, z = cachedX + D[1], cachedY + D[2], cachedZ + D[3]
 	local idx_pos = fmtCoord(x, y, z)
 
-	if turtle.up() then
+	move_return = oldup()
+	if move_return then
 		cachedX, cachedY, cachedZ = x, y, z
 		detectAll()
-		return true
+		return move_return
 	else
 		cachedWorld[idx_pos] = (turtle.detectUp() and 1 or 0.5)
-		return false
+		return move_return
 	end
 end
+
+oldup = turtle.up
+turtle.up = up
 
 ----------------------------------------
 -- down
@@ -949,22 +952,25 @@ end
 
 function down()
 	if not cachedX then
-		return turtle.down()
+		return olddown()
 	end
 	local D = deltas[Down]
 	local x, y, z = cachedX + D[1], cachedY + D[2], cachedZ + D[3]
 	local idx_pos = fmtCoord(x, y, z)
 
-	if turtle.down() then
+	move_return = olddown()
+	if move_return then
 		cachedX, cachedY, cachedZ = x, y, z
 		detectAll()
-		return true
+		return move_return
 	else
 		detectAll()
-		cachedWorld[idx_pos] = (turtle.detectDown() and 1 or 0.5)
-		return false
+		return move_return
 	end
 end
+
+olddown = turtle.down
+turtle.down = down
 
 ----------------------------------------
 -- turnLeft
@@ -975,13 +981,17 @@ end
 
 function turnLeft()
 	if not cachedX then
-		return turtle.turnLeft()
+		return oldturnLeft()
 	end
 	cachedDir = (cachedDir + 1) % 4
-	turtle.turnLeft()
+
+	move_return = oldturnLeft()
 	detectAll()
-	return true
+	return move_return
 end
+
+oldturnLeft = turtle.turnLeft
+turtle.turnLeft = turnLeft
 
 ----------------------------------------
 -- turnRight
@@ -992,13 +1002,16 @@ end
 
 function turnRight()
 	if not cachedX then
-		return turtle.turnRight()
+		return oldturnRight()
 	end
 	cachedDir = (cachedDir + 3) % 4
-	turtle.turnRight()
+	move_return = oldturnRight()
 	detectAll()
-	return true
+	return move_return
 end
+
+oldturnRight = turtle.turnRight
+turtle.turnRight = turnRight
 
 ----------------------------------------
 -- turnTo
@@ -1016,14 +1029,14 @@ function turnTo(_targetDir)
 	if _targetDir == cachedDir then
 		return true
 	elseif ((_targetDir - cachedDir + 4) % 4) == 1 then--moveTo caused exception
-		turnLeft()
+		move_return = turnLeft()
 	elseif ((cachedDir - _targetDir + 4) % 4) == 1 then
-		turnRight()
+		move_return = turnRight()
 	else
 		turnLeft()
-		turnLeft()
+		move_return = turnLeft()
 	end
-	return true
+	return move_return
 end
 
 ----------------------------------------
@@ -1268,7 +1281,15 @@ end
 --
 
 local function heuristic_cost_estimate(x1, y1, z1, x2, y2, z2)
-	return math.abs(x2 - x1) + math.abs(y2 - y1) + math.abs(z2 - z1)
+	dx = math.abs(x2 - x1)
+	dy = math.abs(y2 - y1)
+	dz = math.abs(z2 - z1)
+	if dx > 0 and dz > 0 then
+		turn_cost = 1
+	else
+		turn_cost = 0
+	end
+	return dx + dy + dz + turn_cost
 end
 
 ----------------------------------------
@@ -1298,7 +1319,8 @@ end
 -- return: List of movement to be executed
 --
 
-local function a_star(x1, y1, z1, x2, y2, z2, discover, priority)
+local function a_star(x1, y1, z1, x2, y2, z2, discover, priority, accept_radius)
+	if(not accept_radius) then accept_radius = 0 end
 	if not x1 or not y1 or not z1 then
 		print(x1)
 		print(y1)
@@ -1324,7 +1346,7 @@ local function a_star(x1, y1, z1, x2, y2, z2, discover, priority)
 		return {}
 	end
 
-	if (cachedWorld[idx_goal] or 0) == 0 then
+	if cachedWorld[idx_goal] == false or cachedWorld[idx_goal] == nil or accept_radius > 0 then
 		local openset, closedset, cameFrom, g_score, f_score, tries = {}, {}, {}, {}, {}, 0
 
 		openset[idx_start] = start
@@ -1340,7 +1362,12 @@ local function a_star(x1, y1, z1, x2, y2, z2, discover, priority)
 					idx_current, current, cur_f = idx_cur, cur, f_score[idx_cur]
 				end
 			end
-			if idx_current == idx_goal then
+
+
+			local x3, y3, z3 = current[1], current[2], current[3]
+			local gx, gy, gz = goal[1], goal[2], goal[3]
+
+			if idx_current == idx_goal or (math.abs(x3-gx) + math.abs(y3-gy) + math.abs(z3-gz) <= accept_radius) then
 				return reconstruct_path(cameFrom, idx_goal)
 			end
 
@@ -1351,8 +1378,6 @@ local function a_star(x1, y1, z1, x2, y2, z2, discover, priority)
 
 			openset[idx_current] = nil
 			closedset[idx_current] = true
-
-			local x3, y3, z3 = current[1], current[2], current[3]
 
 			for dir = 0, 5 do -- for all direction find the neighbor of the current position, put them on the openset
 				local D = deltas[dir]
@@ -1374,6 +1399,9 @@ local function a_star(x1, y1, z1, x2, y2, z2, discover, priority)
 			end
 			--os.sleep(0)
 		end
+	else
+		print("cachedworld[idx_goal]: ",cachedWorld[idx_goal])
+		print("accept_radius: ",accept_radius)
 	end
 	print("no path found")
 	return {}
@@ -1387,7 +1415,7 @@ end
 -- return: boolean "success"
 --
 
-function moveTo(_targetX, _targetY, _targetZ, _targetDir, discover)
+function moveTo(_targetX, _targetY, _targetZ, _targetDir, discover, accept_radius)
 	if(type(_targetX) == "string") then
 		_targetX,_targetY,_targetZ,_targetD = egps.getWaypoint(_targetX);
 
@@ -1399,7 +1427,7 @@ function moveTo(_targetX, _targetY, _targetZ, _targetDir, discover)
 	local tries = 1
 	local max_tries = 20
 	while tries < max_tries and (cachedX ~= _targetX or cachedY ~= _targetY or cachedZ ~= _targetZ) do
-		local path = a_star(cachedX, cachedY, cachedZ, _targetX, _targetY, _targetZ, discover)
+		local path = a_star(cachedX, cachedY, cachedZ, _targetX, _targetY, _targetZ, discover, accept_radius)
 		if #path == 0 then
 			return false
 		end
@@ -1626,6 +1654,9 @@ function setLocation(x, y, z, d)
 	if isLama then
 		lama.setPosition(x, y, z, d)
 	end
+
+	detectAll()
+
 	return cachedX, cachedY, cachedZ, cachedDir
 end
 
@@ -1678,9 +1709,9 @@ function setLocationFromGPS()
 
 		-- determine the current direction
 		for tries = 0, 3 do	-- try to move in one direction
-			if turtle.forward() then
+			if oldforward() then
 				local newX, _, newZ = gps.locate(4, false) -- get the new position
-				if not turtle.back() then-- and go back
+				if not oldback() then-- and go back
 					ghost_forward()--couldn't move backward... need to shuffle the map so we don't screw it up
 				end
 
@@ -1701,10 +1732,10 @@ function setLocationFromGPS()
 
 				-- Cancel out the tries
 				if tries%4 == 3 then
-					turtle.turnLeft()
+					oldturnLeft()
 				else
 					for i = 1,tries do
-						turtle.turnRight()
+						oldturnRight()
 					end
 				end
 
@@ -1713,7 +1744,7 @@ function setLocationFromGPS()
 
 			else -- try in another direction
 				tries = tries + 1
-				turtle.turnLeft()
+				oldturnLeft()
 			end
 		end
 
@@ -1733,6 +1764,9 @@ function setLocationFromGPS()
 		if isLama then
 			lama.setPosition(cachedX, cachedY, cachedZ, d)
 		end
+
+		detectAll()
+
 		return cachedX, cachedY, cachedZ, cachedDir
 	else
 		print("no GPS signal")
