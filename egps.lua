@@ -1452,7 +1452,7 @@ end
 -- function: map out an area
 -- inputs:
 -- int _range: size of the cuboid to check (radius excluding center)
--- bool limitY: if true, height of cuboid is 3
+-- bool limitY: if true, height of cuboid is 3. you could also put your own radius here
 -- bool drawMap: if true, draws a map as it goes along so you can see progress
 --
 
@@ -1467,9 +1467,14 @@ function explore(_range, limitY, drawAMap)--TODO: flag to explore previously exp
 	local idx
 	local dist
 	local skip
-	local yVal = _range
+	local yVal
 	drawAMap = drawAMap or false
-	limitY = limitY or false
+
+	if(type(limitY) == "number") then
+		yval = limitY
+	else
+		yval = limitY and 1 or _range
+	end
 
 	if limitY then
 		yVal = 1
