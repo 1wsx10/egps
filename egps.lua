@@ -48,6 +48,11 @@
 -- a_star has boolean "priority" - will ignore exclusion zone
 ----------------------------------------------------------------
 
+-- TODO: find path cost in fuel, similar to moveTo except doesn't require direction and doesn't try to explore
+--			this is useful for checking if we can get back without running out of fuel
+
+local maxint = 4503599627370496
+
 -- Cache of the current turtle position and direction
 local cachedX, cachedY, cachedZ, cachedDir
 
@@ -753,12 +758,10 @@ end
 -- return: boolean cachedWorld is empty
 --
 
-function empty(table)
+function is_empty(table)
 	table = table or cachedWorld
 	for _, value in pairs(table) do
-		if value ~= nil then
-			return false
-		end
+		return false
 	end
 	return true
 end
@@ -1301,23 +1304,41 @@ end
 --
 
 local function reconstruct_path(_cameFrom, _currentNode)
-	while(true) do
-		if(cameFrom[currentNode] ~= nil) then
-			local dir, nextNode = _cameFrom[_currentNode][1], _cameFrom[_currentNode][2]
-		else
-			return {}
-		end
+	local backward_table = {}
+	while(_cameFrom[_currentNode] ~= nil) do
+		local dir, nextNode = _cameFrom[_currentNode][1], _cameFrom[_currentNode][2]
+		table.insert(backward_table, dir)
+		_currentNode = nextNode
 	end
+
+	local out = {}
+	for i, dir in ipairs(backward_table) do
+		table.insert(out, dir)
+	end
+	return out
 end
 
-local function reconstruct_path(_cameFrom, _currentNode)
-	if _cameFrom[_currentNode] ~= nil then
-		local dir, nextNode = _cameFrom[_currentNode][1], _cameFrom[_currentNode][2]
-		local path = reconstruct_path(_cameFrom, nextNode)
-		table.insert(path, dir)
-		return path
+-- local function reconstruct_path(_cameFrom, _currentNode)
+-- 	if _cameFrom[_currentNode] ~= nil then
+-- 		local dir, nextNode = _cameFrom[_currentNode][1], _cameFrom[_currentNode][2]
+-- 		local path = reconstruct_path(_cameFrom, nextNode)
+-- 		table.insert(path, dir)
+-- 		return path
+-- 	else
+-- 		return {}
+-- 	end
+-- end
+
+local yieldTime -- variable to store the time of the last yield
+local function yield()
+	if yieldTime then -- check if it already yielded
+		if os.clock() - yieldTime > 2 then -- if it were more than 2 seconds since the last yield
+			os.queueEvent("someFakeEvent") -- queue the event
+			os.pullEvent("someFakeEvent") -- pull it
+			yieldTime = nil -- reset the counter
+		end
 	else
-		return {}
+		yieldTime = os.clock() -- store the time
 	end
 end
 
@@ -1328,8 +1349,21 @@ end
 -- input: start and goal coordinates
 -- return: List of movement to be executed
 --
+--
+--
+-- discover_cost: false for don't discover
+--                  otherwise this is the penalty value... 0 means try anything with the same huristic distance (not normally what you want)
+--                  1 for discover at the same priority as normal values (default)
+--                  > than 1 for discovering at a lower priority than normal values
 
-local function a_star(x1, y1, z1, x2, y2, z2, discover, priority, accept_radius)
+local function a_star(x1, y1, z1, x2, y2, z2, discover_cost, priority, accept_radius)
+	local should_discover = true
+	if(type(discover_cost) == "boolean" and not discover_cost) then
+		should_discover = false
+	elseif(type(discover_cost) == nil) then
+		discover_cost = 1
+	end
+
 	if(not accept_radius) then accept_radius = 0 end
 	if not x1 or not y1 or not z1 then
 		print(x1)
@@ -1363,9 +1397,9 @@ local function a_star(x1, y1, z1, x2, y2, z2, discover, priority, accept_radius)
 		g_score[idx_start] = 0
 		f_score[idx_start] = heuristic_cost_estimate(x1, y1, z1, x2, y2, z2)
 
-		while not empty(openset) do
+		while not is_empty(openset) do
 			local current, idx_current
-			local cur_f = 9999999
+			local cur_f = maxint
 
 			for idx_cur, cur in pairs(openset) do --for each entry in openset
 				if cur ~= nil and f_score[idx_cur] <= cur_f then
@@ -1373,11 +1407,10 @@ local function a_star(x1, y1, z1, x2, y2, z2, discover, priority, accept_radius)
 				end
 			end
 
-
-			local x3, y3, z3 = current[1], current[2], current[3]
+			local cx, cy, cz = current[1], current[2], current[3]
 			local gx, gy, gz = goal[1], goal[2], goal[3]
 
-			if idx_current == idx_goal or (math.abs(x3-gx) + math.abs(y3-gy) + math.abs(z3-gz) <= accept_radius) then
+			if idx_current == idx_goal or (math.abs(cx-gx) + math.abs(cy-gy) + math.abs(cz-gz) <= accept_radius) then
 				return reconstruct_path(cameFrom, idx_goal)
 			end
 
@@ -1390,27 +1423,34 @@ local function a_star(x1, y1, z1, x2, y2, z2, discover, priority, accept_radius)
 			closedset[idx_current] = true
 
 			for dir = 0, 5 do -- for all direction find the neighbor of the current position, put them on the openset
+				local should_add = true
 				local D = deltas[dir]
-				local x4, y4, z4 = x3 + D[1], y3 + D[2], z3 + D[3]
-				local neighbor, idx_neighbor = {x4, y4, z4}, fmtCoord(x4, y4, z4)
-				if (exclusions[idx_neighbor] == nil or priority) and (cachedWorld[idx_neighbor] or 0) == 0 then -- if its free or unknow and not on exclusion list
-					if closedset[idx_neighbor] == nil then -- if not closed
-						local tentative_g_score = g_score[idx_current] + ((cachedWorld[idx_neighbor] == nil) and discover or 1)
-						--if block is undiscovered, it adds the discover value. (default 1)
-						if openset[idx_neighbor] == nil or tentative_g_score <= g_score[idx_neighbor] then -- tentative_g_score is always at least 1 more than g_score[idx_neighbor] T.T
-							--evaluates to if its not on the open list
-							cameFrom[idx_neighbor] = {dir, idx_current}
-							g_score[idx_neighbor] = tentative_g_score
-							f_score[idx_neighbor] = tentative_g_score + heuristic_cost_estimate(x4, y4, z4, x2, y2, z2)
-							openset[idx_neighbor] = neighbor
-						end
+				local nx, ny, nz = cx + D[1], cy + D[2], cz + D[3]
+				local neighbor, idx_neighbor = {nx, ny, nz}, fmtCoord(nx, ny, nz)
+				local cached_neighbor = cachedWorld[idx_neighbor]
+
+				-- checks to see if we should add the position
+				if(cached_neighbor) then                                                      should_add = false end--don't add walls
+				if(should_add and (not should_discover) and cached_neighbor == nil) then      should_add = false end--might not want to explore
+				if(ahould_add and (not priority) and exclusions[idx_neighbor]) then           should_add = false end--don't look though exclusions unless priority is set
+				if(should_add and closedset[idx_neighbor] ~= nil) then                        should_add = false end--don't add anything in closedset
+
+				if(should_add) then
+					local tentative_g_score = g_score[idx_current] + ((cachedWorld[idx_neighbor] == nil) and discover_cost or 1)
+					--if block is undiscovered, it adds the discover value. (default 1)
+					if openset[idx_neighbor] == nil or tentative_g_score <= g_score[idx_neighbor] then -- tentative_g_score is always at least 1 more than g_score[idx_neighbor] T.T
+						--evaluates to if its not on the open list
+						cameFrom[idx_neighbor] = {dir, idx_current}
+						g_score[idx_neighbor] = tentative_g_score
+						f_score[idx_neighbor] = tentative_g_score + heuristic_cost_estimate(nx, ny, nz, x2, y2, z2)
+						openset[idx_neighbor] = neighbor
 					end
 				end
 			end
-			--os.sleep(0)
+			yield()
 		end
 	else
-		print("cachedworld[idx_goal]: ",cachedWorld[idx_goal])
+		print("cachedWorld[idx_goal]: ",cachedWorld[idx_goal])
 		print("accept_radius: ",accept_radius)
 	end
 	print("no path found")
