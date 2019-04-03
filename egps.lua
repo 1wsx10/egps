@@ -827,14 +827,14 @@ function forward()
 	local x, y, z = cachedX + D[1], cachedY + D[2], cachedZ + D[3]--adds corisponding delta to direction
 	local idx_pos = fmtCoord(x, y, z)
 
-	move_return = oldforward()
-	if move_return then
+	local move_success, reason = oldforward()
+	if move_success then
 		cachedX, cachedY, cachedZ = x, y, z
 		detectAll()
-		return move_return
+		return move_success, reason
 	else
 		detectAll()
-		return move_return
+		return move_success, reason
 	end
 end
 
@@ -878,14 +878,14 @@ function back()
 	local x, y, z = cachedX - D[1], cachedY - D[2], cachedZ - D[3]
 	local idx_pos = fmtCoord(x, y, z)
 
-	move_return = oldback()
-	if move_return then
+	local move_success, reason = oldback()
+	if move_success then
 		cachedX, cachedY, cachedZ = x, y, z
 		detectAll()
-		return move_return
+		return move_success, reason
 	else
 		cachedWorld[idx_pos] = true
-		return move_return
+		return move_success, reason
 	end
 end
 
@@ -929,14 +929,14 @@ function up()
 	local x, y, z = cachedX + D[1], cachedY + D[2], cachedZ + D[3]
 	local idx_pos = fmtCoord(x, y, z)
 
-	move_return = oldup()
-	if move_return then
+	local move_success, reason = oldup()
+	if move_success then
 		cachedX, cachedY, cachedZ = x, y, z
 		detectAll()
-		return move_return
+		return move_success, reason
 	else
 		cachedWorld[idx_pos] = (turtle.detectUp() and 1 or 0.5)
-		return move_return
+		return move_success, reason
 	end
 end
 
@@ -958,14 +958,14 @@ function down()
 	local x, y, z = cachedX + D[1], cachedY + D[2], cachedZ + D[3]
 	local idx_pos = fmtCoord(x, y, z)
 
-	move_return = olddown()
-	if move_return then
+	local move_success, reason = olddown()
+	if move_success then
 		cachedX, cachedY, cachedZ = x, y, z
 		detectAll()
-		return move_return
+		return move_success, reason
 	else
 		detectAll()
-		return move_return
+		return move_success, reason
 	end
 end
 
@@ -985,9 +985,9 @@ function turnLeft()
 	end
 	cachedDir = (cachedDir + 1) % 4
 
-	move_return = oldturnLeft()
+	local move_success, reason = oldturnLeft()
 	detectAll()
-	return move_return
+	return move_success, reason
 end
 
 oldturnLeft = turtle.turnLeft
@@ -1005,9 +1005,9 @@ function turnRight()
 		return oldturnRight()
 	end
 	cachedDir = (cachedDir + 3) % 4
-	move_return = oldturnRight()
+	local move_success, reason = oldturnRight()
 	detectAll()
-	return move_return
+	return move_success, reason
 end
 
 oldturnRight = turtle.turnRight
@@ -1029,14 +1029,14 @@ function turnTo(_targetDir)
 	if _targetDir == cachedDir then
 		return true
 	elseif ((_targetDir - cachedDir + 4) % 4) == 1 then--moveTo caused exception
-		move_return = turnLeft()
+		local move_success, reason = turnLeft()
 	elseif ((cachedDir - _targetDir + 4) % 4) == 1 then
-		move_return = turnRight()
+		local move_success, reason = turnRight()
 	else
 		turnLeft()
-		move_return = turnLeft()
+		local move_success, reason = turnLeft()
 	end
-	return move_return
+	return move_success, reason
 end
 
 ----------------------------------------
@@ -1299,6 +1299,16 @@ end
 -- input: A* visited nodes and goal
 -- return: List of movement to be executed
 --
+
+local function reconstruct_path(_cameFrom, _currentNode)
+	while(true) do
+		if(cameFrom[currentNode] ~= nil) then
+			local dir, nextNode = _cameFrom[_currentNode][1], _cameFrom[_currentNode][2]
+		else
+			return {}
+		end
+	end
+end
 
 local function reconstruct_path(_cameFrom, _currentNode)
 	if _cameFrom[_currentNode] ~= nil then
