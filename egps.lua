@@ -1295,6 +1295,19 @@ local function heuristic_cost_estimate(x1, y1, z1, x2, y2, z2)
 	return dx + dy + dz + turn_cost
 end
 
+function reverse_table(arr)
+	local i, j = 1, #arr
+
+	while i < j do
+		arr[i], arr[j] = arr[j], arr[i]
+
+		i = i + 1
+		j = j - 1
+	end
+
+	return arr
+end
+
 ----------------------------------------
 -- reconstruct_path
 --
@@ -1311,11 +1324,7 @@ local function reconstruct_path(_cameFrom, _currentNode)
 		_currentNode = nextNode
 	end
 
-	local out = {}
-	for i, dir in ipairs(backward_table) do
-		table.insert(out, dir)
-	end
-	return out
+	return reverse_table(backward_table)
 end
 
 -- local function reconstruct_path(_cameFrom, _currentNode)
@@ -1358,9 +1367,9 @@ end
 
 local function a_star(x1, y1, z1, x2, y2, z2, discover_cost, priority, accept_radius)
 	local should_discover = true
-	if(type(discover_cost) == "boolean" and not discover_cost) then
+	if(discover_cost == false) then
 		should_discover = false
-	elseif(type(discover_cost) == nil) then
+	elseif(discover_cost == nil) then
 		discover_cost = 1
 	end
 
@@ -1399,8 +1408,11 @@ local function a_star(x1, y1, z1, x2, y2, z2, discover_cost, priority, accept_ra
 
 		while not is_empty(openset) do
 			local current, idx_current
-			local cur_f = maxint
+			--local cur_f = maxint
+			local cur_f = 999999
 
+			-- figure out if we can do this as a priority queue (priority based on F score (ties resolved by h-score))
+			-- without that, this is quite slow
 			for idx_cur, cur in pairs(openset) do --for each entry in openset
 				if cur ~= nil and f_score[idx_cur] <= cur_f then
 					idx_current, current, cur_f = idx_cur, cur, f_score[idx_cur]
@@ -1428,17 +1440,24 @@ local function a_star(x1, y1, z1, x2, y2, z2, discover_cost, priority, accept_ra
 				local nx, ny, nz = cx + D[1], cy + D[2], cz + D[3]
 				local neighbor, idx_neighbor = {nx, ny, nz}, fmtCoord(nx, ny, nz)
 				local cached_neighbor = cachedWorld[idx_neighbor]
+				local neighbor_cost = 1
 
 				-- checks to see if we should add the position
-				if(cached_neighbor) then                                                      should_add = false end--don't add walls
-				if(should_add and (not should_discover) and cached_neighbor == nil) then      should_add = false end--might not want to explore
+				if(cached_neighbor == nil) then
+					if(should_discover) then                                                                        --want a different cost for discovering
+						neighbor_cost = discover_cost
+					else                                                                                            --we don't want to discover anything
+						should_add = false
+					end
+				end
+				if(should_add and cached_neighbor) then                                       should_add = false end--don't add walls
 				if(ahould_add and (not priority) and exclusions[idx_neighbor]) then           should_add = false end--don't look though exclusions unless priority is set
 				if(should_add and closedset[idx_neighbor] ~= nil) then                        should_add = false end--don't add anything in closedset
 
 				if(should_add) then
-					local tentative_g_score = g_score[idx_current] + ((cachedWorld[idx_neighbor] == nil) and discover_cost or 1)
+					local tentative_g_score = g_score[idx_current] + neighbor_cost -- discover cost or 1 depending if we want to discover or not
 					--if block is undiscovered, it adds the discover value. (default 1)
-					if openset[idx_neighbor] == nil or tentative_g_score <= g_score[idx_neighbor] then -- tentative_g_score is always at least 1 more than g_score[idx_neighbor] T.T
+					if openset[idx_neighbor] == nil or tentative_g_score <= g_score[idx_neighbor] then -- either new neighbor, or we found a shorter path
 						--evaluates to if its not on the open list
 						cameFrom[idx_neighbor] = {dir, idx_current}
 						g_score[idx_neighbor] = tentative_g_score
