@@ -51,6 +51,159 @@
 -- TODO: find path cost in fuel, similar to moveTo except doesn't require direction and doesn't try to explore
 --			this is useful for checking if we can get back without running out of fuel
 
+
+
+
+
+--im using this priority queue:
+--==============================================================================================================
+-- https://gist.github.com/LukeMS/89dc587abd786f92d60886f4977b1953
+--[[  Priority Queue implemented in lua, based on a binary heap.
+Copyright (C) 2017 Lucas de Morais Siqueira <lucas.morais.siqueira@gmail.com>
+License: zlib
+  This software is provided 'as-is', without any express or implied
+  warranty. In no event will the authors be held liable for any damages
+  arising from the use of this software.
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely, subject to the following restrictions:
+  1. The origin of this software must not be misrepresented; you must not
+     claim that you wrote the original software. If you use this software
+     in a product, an acknowledgement in the product documentation would be
+     appreciated but is not required.
+  2. Altered source versions must be plainly marked as such, and must not be
+     misrepresented as being the original software.
+  3. This notice may not be removed or altered from any source distribution.
+]]--
+
+local floor = math.floor
+
+
+local PriorityQueue = {}
+PriorityQueue.__index = PriorityQueue
+
+setmetatable(
+    PriorityQueue,
+    {
+        __call = function (self)
+            setmetatable({}, self)
+            self:initialize()
+            return self
+        end
+    }
+)
+
+
+function PriorityQueue:initialize()
+    --[[  Initialization.
+    Example:
+        PriorityQueue = require("priority_queue")
+        pq = PriorityQueue()
+    ]]--
+    self.heap = {}
+    self.current_size = 0
+end
+
+function PriorityQueue:empty()
+    return self.current_size == 0
+end
+
+function PriorityQueue:size()
+    return self.current_size
+end
+
+function PriorityQueue:swim()
+    -- Swim up on the tree and fix the order heap property.
+    local heap = self.heap
+    local floor = floor
+    local i = self.current_size
+
+    while floor(i / 2) > 0 do
+        local half = floor(i / 2)
+        if heap[i][2] < heap[half][2] then
+            heap[i], heap[half] = heap[half], heap[i]
+        end
+        i = half
+    end
+end
+
+function PriorityQueue:put(v, p)
+    --[[ Put an item on the queue.
+    Args:
+        v: the item to be stored
+        p(number): the priority of the item - lower is first
+    ]]--
+    --
+
+    self.heap[self.current_size + 1] = {v, p}
+    self.current_size = self.current_size + 1
+    self:swim()
+end
+
+function PriorityQueue:sink()
+    -- Sink down on the tree and fix the order heap property.
+    local size = self.current_size
+    local heap = self.heap
+    local i = 1
+
+    while (i * 2) <= size do
+        local mc = self:min_child(i)
+        if heap[i][2] > heap[mc][2] then
+            heap[i], heap[mc] = heap[mc], heap[i]
+        end
+        i = mc
+    end
+end
+
+function PriorityQueue:min_child(i)
+    if (i * 2) + 1 > self.current_size then
+        return i * 2
+    else
+        if self.heap[i * 2][2] < self.heap[i * 2 + 1][2] then
+            return i * 2
+        else
+            return i * 2 + 1
+        end
+    end
+end
+
+function PriorityQueue:pop()
+    -- Remove and return the top priority item
+    local heap = self.heap
+    if(self.current_size == 0) then return nil end
+    local retval = heap[1][1]
+    heap[1] = heap[self.current_size]
+    heap[self.current_size] = nil
+    self.current_size = self.current_size - 1
+    self:sink()
+    return retval
+end
+--==============================================================================================================
+
+function testqueue()
+	local queue = PriorityQueue()
+
+	queue:put("5", 5)
+	queue:put("10",10)
+	queue:put("7",7)
+	queue:put("5",5)
+
+	a = queue:pop()
+	b = queue:pop()
+	c = queue:pop()
+	queue:pop()
+	queue:pop()
+
+	print("first: ", a)
+	print("second: ",b)
+	print("third: ",c)
+end
+
+
+
+
+
+
 local maxint = 4503599627370496
 
 -- Cache of the current turtle position and direction
@@ -1308,6 +1461,12 @@ function reverse_table(arr)
 	return arr
 end
 
+
+
+
+
+
+
 ----------------------------------------
 -- reconstruct_path
 --
@@ -1400,24 +1559,30 @@ local function a_star(x1, y1, z1, x2, y2, z2, discover_cost, priority, accept_ra
 	end
 
 	if cachedWorld[idx_goal] == false or cachedWorld[idx_goal] == nil or accept_radius > 0 then
-		local openset, closedset, cameFrom, g_score, f_score, tries = {}, {}, {}, {}, {}, 0
+		local openset, openqueue, closedset, cameFrom, g_score, f_score, tries = {}, PriorityQueue(), {}, {}, {}, {}, 0
 
 		openset[idx_start] = start
 		g_score[idx_start] = 0
 		f_score[idx_start] = heuristic_cost_estimate(x1, y1, z1, x2, y2, z2)
+		openqueue:put(idx_start, f_score[idx_start])
 
-		while not is_empty(openset) do
+		--while not is_empty(openset) do
+		while openqueue:size() ~= 0 do
 			local current, idx_current
 			--local cur_f = maxint
 			local cur_f = 999999
 
-			-- figure out if we can do this as a priority queue (priority based on F score (ties resolved by h-score))
-			-- without that, this is quite slow
-			for idx_cur, cur in pairs(openset) do --for each entry in openset
-				if cur ~= nil and f_score[idx_cur] <= cur_f then
-					idx_current, current, cur_f = idx_cur, cur, f_score[idx_cur]
-				end
+
+			-- get lowest f_score
+			print(openqueue:size())
+			idx_current = openqueue:pop()
+			-- TODO: remove extra values from queue at appropriate time so this loop isn't needed
+			while(openset[idx_current] == nil) do--possible duplicates and values that should be closed
+				idx_current = openqueue:pop()
 			end
+			current, cur_f = openset[idx_current], f_score[idx_current]
+
+
 
 			local cx, cy, cz = current[1], current[2], current[3]
 			local gx, gy, gz = goal[1], goal[2], goal[3]
@@ -1463,6 +1628,7 @@ local function a_star(x1, y1, z1, x2, y2, z2, discover_cost, priority, accept_ra
 						g_score[idx_neighbor] = tentative_g_score
 						f_score[idx_neighbor] = tentative_g_score + heuristic_cost_estimate(nx, ny, nz, x2, y2, z2)
 						openset[idx_neighbor] = neighbor
+						openqueue:put(idx_neighbor, f_score[idx_neighbor])
 					end
 				end
 			end
@@ -1496,7 +1662,7 @@ function moveTo(_targetX, _targetY, _targetZ, _targetDir, discover, accept_radiu
 	local tries = 1
 	local max_tries = 20
 	while tries < max_tries and (cachedX ~= _targetX or cachedY ~= _targetY or cachedZ ~= _targetZ) do
-		local path = a_star(cachedX, cachedY, cachedZ, _targetX, _targetY, _targetZ, discover, accept_radius)
+		local path = a_star(cachedX, cachedY, cachedZ, _targetX, _targetY, _targetZ, discover, false, accept_radius)
 		if #path == 0 then
 			return false
 		end
