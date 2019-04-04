@@ -1572,21 +1572,18 @@ function explore(_range, limitY, drawAMap)--TODO: flag to explore previously exp
 	local idx
 	local dist
 	local skip
-	local yVal
+	local yVal = _range
+	_range = _range or 3
 	drawAMap = drawAMap or false
 
 	if(type(limitY) == "number") then
 		yval = limitY
-	else
-		yval = limitY and 1 or _range
-	end
-
-	if limitY then
-		yVal = 1
+	elseif(limitY) then
+		yval = 1
 	end
 
 	for dx = -_range, _range do
-		for dy = -yVal, yVal do
+		for dy = -yVal + 1, yVal - 1 do
 			for dz = -_range, _range do
 				idx = fmtCoord(ox+dx, oy+dy, oz+dz)
 				toCheck[idx] = {ox+dx, oy+dy, oz+dz}--set up the toCheck table
