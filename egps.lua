@@ -801,10 +801,10 @@ end
 -- function: interpret index, / x,z,y parameters
 -- return: idx, x
 --
-local function idxyz(idx, y, z)
+function idxyz(idx, y, z)
 	local x
 	if (type(idx) == "string") and y == nil and z == nil then
-		x = tonumber(string.match(idx, "(.*):"))
+		x = tonumber(string.match(idx, "(.*):.*:"))
 	elseif(type(idx) == "number" and type(y) == "number" and type(z) == "number") then
 		x = idx
 		idx = fmtCoord(x, y, z)
