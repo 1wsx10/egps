@@ -553,6 +553,7 @@ function serialize( t )
 	local tTracking = {}
 	return serializeImpl( t, tTracking, "" )
 end
+textutils.serialize = serialize
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ----------------------------------------
@@ -566,7 +567,7 @@ end
 function setFile(name, data)
 	if fs.isDir(dataDir.."") then
 		local file = fs.open(dataDir.."/"..name,"w")
-		file.write(serialize(data))
+		file.write(textutils.serialize(data))
 		file.close()
 		return true
 	else
