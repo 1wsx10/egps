@@ -54,7 +54,6 @@
 
 
 
-
 --im using this priority queue:
 --==============================================================================================================
 -- https://gist.github.com/LukeMS/89dc587abd786f92d60886f4977b1953
@@ -1932,12 +1931,14 @@ end
 function setLocationFromGPS()
 	if startGPS() then
 		-- get the current position
-		cachedX, cachedY, cachedZ	= gps.locate(4, false)
+		cachedX, cachedY, cachedZ = gps.locate(4, false)
 		if not cachedX then
 			return false
 		end
 		local d = cachedDir or nil
 		cachedDir = nil
+
+		local tries
 
 		-- determine the current direction
 		for tries = 0, 3 do	-- try to move in one direction
@@ -1964,10 +1965,10 @@ function setLocationFromGPS()
 
 				-- Cancel out the tries
 				if tries%4 == 3 then
-					oldturnLeft()
+					turnLeft()
 				else
 					for i = 1,tries do
-						oldturnRight()
+						turnRight()
 					end
 				end
 
