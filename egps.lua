@@ -803,21 +803,19 @@ end
 --
 
 function setExclusion(idx, y, z)
-	if y == nil and z == nil then
+	if (type(idx) == "string") and y == nil and z == nil then
 		local x = tonumber(string.match(idx, "(.*):"))
 		y = tonumber(string.match(idx, ":(.*):"))
 		z = tonumber(string.match(idx, ":(.*)"))
-	else
+	elseif(type(idx) == "number" and type(y) == "number" and type(z) == "number") then
 		local x = idx
 		idx = fmtCoord(x, y, z)
-	end
-	d = d or 0
-	exclusions[idx] = {x, y, z}
-	if exclusions[idx] ~= nil then
-		return true
 	else
+		error("bad coordinates")
 		return false
 	end
+	exclusions[idx] = {x, y, z}
+	return exclusions[idx] ~= nil
 end
 
 ----------------------------------------
@@ -825,7 +823,7 @@ end
 --
 -- function: exclude a cuboid
 -- input: 2 opposite corners (x, y, z, x2, y2, z2)
--- option: boolean to include the zone
+-- option: boolean to remove any excluded area here
 --
 
 function excludeZone(x, y, z, x2, y2, z2, include)
