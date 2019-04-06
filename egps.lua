@@ -799,19 +799,27 @@ end
 -- idxyz
 --
 -- function: interpret index, / x,z,y parameters
--- return: idx, x
+-- return: idx, x, y, z
 --
 function idxyz(idx, y, z)
 	local x
 	if (type(idx) == "string") and y == nil and z == nil then
 		x = tonumber(string.match(idx, "(.*):.*:"))
+		y = tonumber(string.match(idx, ":(.*):"))
+		z = tonumber(string.match(idx, ":.*:(.*)"))
+
+		if(not x or not y or not z) then
+			error("bad coordinates")
+			return nil
+		end
 	elseif(type(idx) == "number" and type(y) == "number" and type(z) == "number") then
 		x = idx
 		idx = fmtCoord(x, y, z)
 	else
+		error("bad coordinates")
 		return nil
 	end
-	return idx, x
+	return idx, x, y, z
 end
 
 ----------------------------------------
@@ -822,22 +830,8 @@ end
 -- returns: boolean "success"
 --
 function setExclusion(idx, y, z)
-<<<<<<< HEAD
-	if (type(idx) == "string") and y == nil and z == nil then
-		local x = tonumber(string.match(idx, "(.*):"))
-		y = tonumber(string.match(idx, ":(.*):"))
-		z = tonumber(string.match(idx, ":(.*)"))
-	elseif(type(idx) == "number" and type(y) == "number" and type(z) == "number") then
-		local x = idx
-		idx = fmtCoord(x, y, z)
-	else
-		error("bad coordinates")
-		return false
-	end
-=======
 	local idx, x = idxyz(idx,y,z)
 
->>>>>>> refactor
 	exclusions[idx] = {x, y, z}
 	return exclusions[idx] ~= nil
 end
