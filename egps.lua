@@ -801,7 +801,6 @@ end
 -- input: exclusions coordinates
 -- returns: boolean "success"
 --
-
 function setExclusion(idx, y, z)
 	if (type(idx) == "string") and y == nil and z == nil then
 		local x = tonumber(string.match(idx, "(.*):"))
@@ -1571,7 +1570,7 @@ local function a_star(x1, y1, z1, x2, y2, z2, discover_cost, priority, accept_ra
 
 
 			-- get lowest f_score
-			print(openqueue:size())
+			--print(openqueue:size())
 			idx_current = openqueue:pop()
 			-- TODO: remove extra values from queue at appropriate time so this loop isn't needed
 			while(openset[idx_current] == nil) do--possible duplicates and values that should be closed
@@ -1615,6 +1614,12 @@ local function a_star(x1, y1, z1, x2, y2, z2, discover_cost, priority, accept_ra
 				if(should_add and cached_neighbor) then                                       should_add = false end--don't add walls
 				if(ahould_add and (not priority) and exclusions[idx_neighbor]) then           should_add = false end--don't look though exclusions unless priority is set
 				if(should_add and closedset[idx_neighbor] ~= nil) then                        should_add = false end--don't add anything in closedset
+
+				if(ahould_add and (not priority) and exclusions[idx_neighbor]) then
+					print(idx_neighbor, "is in exclusions")
+				else
+					print(idx_neighbor, "is not in exclusions")
+				end
 
 				if(should_add) then
 					local tentative_g_score = g_score[idx_current] + neighbor_cost -- discover cost or 1 depending if we want to discover or not
