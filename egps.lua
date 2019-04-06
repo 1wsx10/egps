@@ -794,6 +794,26 @@ function saveExclusions()
 	setFile("exclusions", exclusions)
 end
 
+
+----------------------------------------
+-- idxyz
+--
+-- function: interpret index, / x,z,y parameters
+-- return: idx, x
+--
+local function idxyz(idx, y, z)
+	local x
+	if (type(idx) == "string") and y == nil and z == nil then
+		x = tonumber(string.match(idx, "(.*):"))
+	elseif(type(idx) == "number" and type(y) == "number" and type(z) == "number") then
+		x = idx
+		idx = fmtCoord(x, y, z)
+	else
+		return nil
+	end
+	return idx, x
+end
+
 ----------------------------------------
 -- setExclusion
 --
@@ -803,21 +823,10 @@ end
 --
 
 function setExclusion(idx, y, z)
-	if y == nil and z == nil then
-		local x = tonumber(string.match(idx, "(.*):"))
-		y = tonumber(string.match(idx, ":(.*):"))
-		z = tonumber(string.match(idx, ":(.*)"))
-	else
-		local x = idx
-		idx = fmtCoord(x, y, z)
-	end
-	d = d or 0
+	local idx, x = idxyz(idx,y,z)
+
 	exclusions[idx] = {x, y, z}
-	if exclusions[idx] ~= nil then
-		return true
-	else
-		return false
-	end
+	return exclusions[idx] ~= nil
 end
 
 ----------------------------------------
@@ -862,14 +871,8 @@ end
 --
 
 function getExclusion(idx, y, z)
-	if y == nil and z == nil then
-		local x = tonumber(string.match(idx, "(.*):"))
-		y = tonumber(string.match(idx, ":(.*):"))
-		z = tonumber(string.match(idx, ":(.*)"))
-	else
-		local x = idx
-		idx = fmtCoord(x, y, z)
-	end
+	local idx, x = idxyz(idx,y,z)
+
 	if exclusions[idx] ~= nil then
 		x = exclusions[idx][1]
 		y = exclusions[idx][2]
@@ -877,7 +880,7 @@ function getExclusion(idx, y, z)
 		return x, y, z
 	else
 		print("exclusion "..idx.." not found")
-		return nil, nil, nil
+		return nil
 	end
 end
 
@@ -890,17 +893,15 @@ end
 --
 
 function delExclusion(idx, y, z)
-	if y == nil and z == nil then
-		local x = tonumber(string.match(idx, "(.*):"))
-		y = tonumber(string.match(idx, ":(.*):"))
-		z = tonumber(string.match(idx, ":(.*)"))
+	local idx, x = idxyz(idx,y,z)
+
+	if(exclusions[idx]) then
+		exclusions[idx] = nil
+		print("exclusion deleted")
+		return true
 	else
-		local x = idx
-		idx = fmtCoord(x, y, z)
+		return false
 	end
-	exclusions[idx] = nil
-	print("exclusion deleted")
-	return true
 end
 
 ----------------------------------------
